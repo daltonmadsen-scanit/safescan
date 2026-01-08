@@ -66,6 +66,67 @@ ingredientsArr = product.ingredients_text
   .map(s => s.trim())
   .filter(Boolean);
 
+// ===== Camera bootstrap & diagnostics =====
+
+const previewEl = document.getElementById('preview');        
+const startBtn  = document.getElementById('startCameraBtn');
+const statusEl  = document.getElementById('cameraStatus');
+
+function report(msg, err) {
+  if (statusEl) statusEl.textContent = msg;
+  console.log(msg, err || '');
+}
+
+if (previewEl) {
+  previewEl.setAttribute('playsinline', '');
+  previewEl.muted = true;
+}
+
+const constraints = {
+  audio: false,
+  video: {
+    facingMode: { ideal: 'environment' },
+    width: { ideal: 1280 },
+    height: { ideal: 720 }
+  }
+};
+
+async function startCamera() {
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      report('Camera API not available. Must be HTTPS.');
+      return;
+    }
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    const track  = stream.getVideoTracks()[0];
+    previewEl.srcObject = stream;
+
+    await new Promise(res => {
+      if (previewEl.readyState >= 2) return res();
+      previewEl.onloadedmetadata = res;
+    });
+
+    await previewEl.play();
+    report(`Camera started: ${track ? track.label : 'Unknown device'}`);
+  } catch (err) {
+    switch (err.name) {
+      case 'NotAllowedError':
+        report('Camera denied. Check browser + OS settings.', err);
+        break;
+      case 'NotFoundError':
+        report('No camera found or it is busy.', err);
+        break;
+      case 'OverconstrainedError':
+        report('Requested resolution is not supported.', err);
+        break;
+      default:
+        report(`getUserMedia error: ${err.name}`, err);
+    }
+  }
+}
+
+if (startBtn) startBtn.addEventListener('click', startCamera);
+
     const hits = findMatches(ingredientsArr);
     const metaHtml = `<div><strong>${name}</strong> ${brand ? `— ${brand}` : ''}<br/><small>Barcode: ${clean}</small></div>`;
     renderResult(metaHtml, hits);
