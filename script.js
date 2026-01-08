@@ -60,8 +60,12 @@
     const brand = product.brands || '';
     let ingredientsArr = [];
     if(Array.isArray(product.ingredients)) ingredientsArr = product.ingredients.map(i=> i.text || i.id || i.orig || '').filter(Boolean);
-    if((!ingredientsArr || ingredientsArr.length===0) && product.ingredients_text) ingredientsArr = product.ingredients_text.split(/,|;|\.|
-/);
+    
+ingredientsArr = product.ingredients_text
+  .split(/[;,.\|]+/)
+  .map(s => s.trim())
+  .filter(Boolean);
+
     const hits = findMatches(ingredientsArr);
     const metaHtml = `<div><strong>${name}</strong> ${brand ? `— ${brand}` : ''}<br/><small>Barcode: ${clean}</small></div>`;
     renderResult(metaHtml, hits);
