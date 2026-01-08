@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SafeScan: Food Intolerance Barcode Checker</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#22c55e" />
+</head>
+<body>
+  <header>
+    <h1>SafeScan</h1>
+    <p>Scan a product barcode and check its ingredients against your intolerance list.</p>
+  </header>
+  <main>
+    <section class="scanner">
+      <div id="supportWarning" class="warning" hidden>
+        <strong>Note:</strong> Your browser may not support the native Barcode Detector API. You can still enter a barcode manually below. On Android Chrome, scanning should work. (Camera access requires HTTPS or <code>localhost</code>.)
+      </div>
+      <div class="controls">
+        <button id="startScanBtn">📷 Start camera scan</button>
+        <button id="stopScanBtn" disabled>⏹ Stop</button>
+      </div>
+      <video id="video" playsinline></video>
+    </section>
+
+    <section class="manual">
+      <label for="barcodeInput">Or enter a UPC/EAN barcode:</label>
+      <input id="barcodeInput" type="text" placeholder="eg. 012345678905" />
+      <button id="lookupBtn">Lookup Product</button>
+    </section>
+
+    <section class="ingredientsCheck">
+      <label for="ingredientsText">Or paste product ingredients to check:</label>
+      <textarea id="ingredientsText" rows="4" placeholder="Ingredients: ..."></textarea>
+      <button id="checkIngredientsBtn">Check Ingredients</button>
+    </section>
+
+    <section id="result" class="result" hidden>
+      <h2>Result</h2>
+      <div id="productMeta"></div>
+      <div id="matchSummary"></div>
+      <div id="matches"></div>
+    </section>
+  </main>
+  <footer>
+    <p>Product data provided by Open Food Facts (crowdsourced). Always verify labels.</p>
+  </footer>
+
+  <script src="https://unpkg.com/@zxing/library@latest"></script>
+  <script src="script.js"></script>
+  <script> if('serviceWorker' in navigator){ navigator.serviceWorker.register('/service-worker.js'); } </script>
+</body>
+</html>
