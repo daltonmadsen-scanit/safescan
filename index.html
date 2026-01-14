@@ -3,41 +3,55 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>SafeScan Camera</title>
+  <title>SafeScan – Barcode & Ingredients</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Optional PWA manifest (keep if you already have one) -->
-  <link rel="manifest" href="manifest.json" />
+  manifest.json
 
-  <!-- Minimal styles (merge with your styles.css if you prefer) -->
   <style>
     :root { color-scheme: light dark; }
     body {
-      margin: 0;
+      margin: 0; background:#111; color:#eee;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      background: #111; color: #eee;
     }
-    .container { max-width: 720px; margin: 0 auto; padding: 1rem; }
+    .container { max-width: 860px; margin: 0 auto; padding: 1rem; }
     h1 { font-size: 1.25rem; margin: 0 0 .75rem; }
-    video { width: 100%; max-width: 640px; background: #000; border-radius: 12px; }
-    #camera-status { margin: .5rem 0; color: #8be28b; min-height: 1.2em; }
-    .controls { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .5rem; }
+    video { width: 100%; max-width: 640px; background:#000; border-radius: 12px; }
+    #camera-status { margin:.5rem 0; color:#8be28b; min-height:1.2em; }
+
+    .controls { display:flex; gap:.5rem; flex-wrap:wrap; margin:.5rem 0 1rem; }
     .controls button {
-      background: #1f6feb; color: #fff; border: none; border-radius: 8px;
-      padding: .6rem .9rem; font-weight: 600; cursor: pointer;
+      background:#1f6feb; color:#fff; border: none; border-radius: 8px;
+      padding: .6rem .9rem; font-weight:600; cursor:pointer;
     }
-    .controls button:disabled { opacity: .5; cursor: not-allowed; }
-    canvas { display: block; max-width: 640px; margin-top: .5rem; background: #222; border-radius: 8px; }
-    .note { font-size: .9rem; color: #bbb; margin-top: .75rem; }
+    .controls button:disabled { opacity:.5; cursor:not-allowed; }
+
+    .results {
+      margin-top: 1rem; background:#1a1a1a; border-radius:12px; padding:1rem;
+    }
+    .results h2 { margin:.25rem 0 .5rem; font-size:1.1rem; }
+    .field { margin:.4rem 0; }
+    .label { font-weight:600; color:#bbb; margin-right:.3rem; }
+    .value { color:#fff; }
+    .ingredients { white-space:pre-wrap; line-height:1.35; color:#ddd; }
+
+    .warnings { margin-top:.6rem; }
+    .warn-section { margin:.4rem 0 .6rem; }
+    .warn-title { font-weight:700; }
+    .list { margin:.25rem 0 0 .75rem; }
+    .ok { color:#8be28b; }
+    .lvl2 { color:#ffcc66; }  /* amber */
+    .lvl3 { color:#ff6b6b; }  /* red */
+
+    canvas { display:block; max-width:640px; margin-top:.5rem; background:#222; border-radius:8px; }
+    .note { font-size:.9rem; color:#bbb; margin-top:.75rem; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>SafeScan Camera</h1>
+    <h1>SafeScan – Barcode & Ingredients</h1>
 
-    <!-- Live preview; iOS needs playsinline + autoplay + muted -->
+    <!-- Live preview -->
     <video id="preview" playsinline autoplay muted></video>
-
-    <!-- Status line (messages / decoded results appear here) -->
     <div id="camera-status"></div>
 
     <!-- Controls -->
@@ -48,20 +62,44 @@
       <button id="stop" disabled>Stop</button>
     </div>
 
-    <!-- Captured still frame (optional) -->
+    <!-- Optional capture canvas -->
     <canvas id="snapshot"></canvas>
 
     <p class="note">
-      Tip: If the preview doesn’t start automatically, tap <strong>Start Camera</strong>
+      If the preview doesn’t start automatically, tap <strong>Start Camera</strong>
       (iOS Safari may require a user gesture).
     </p>
+
+    <!-- Results panel -->
+    <div class="results" id="results">
+      <h2>Scan a barcode to see product ingredients & warnings</h2>
+      <div class="field"><span class="label">Product:</span><span id="res-name" class="value">—</span></div>
+      <div class="field"><span class="label">Brand:</span><span id="res-brand" class="value">—</span></div>
+      <div class="field"><span class="label">Barcode:</span><span id="res-barcode" class="value">—</span></div>
+      <div class="field"><span class="label">Ingredients:</span></div>
+      <div id="res-ingredients" class="ingredients">—</div>
+
+      <div class="warnings">
+        <div class="warn-section">
+          <div class="warn-title lvl3">Level 3 ⚠️</div>
+          <ul id="res-lvl3" class="list lvl3"><li>—</li></ul>
+        </div>
+        <div class="warn-section">
+          <div class="warn-title lvl2">Level 2 ⚠️</div>
+          <ul id="res-lvl2" class="list lvl2"><li>—</li></ul>
+        </div>
+        <div class="warn-section">
+          <div class="warn-title ok">No matches</div>
+          <ul id="res-ok" class="list ok"><li>—</li></ul>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Step 1: Load ZXing-JS (multi-format barcode scanner) from CDN -->
-  <!-- The UMD bundle exposes window.ZXing.* for direct browser use -->
-  <script src="https://unpkg.com/@zxing/browser@latest/umd/index.min.js"></script>
+  <!-- ZXing-JS (UMD build): MUST load before script.js -->
+  https://unpkg.com/@zxing/browser@latest/umd/index.min.js</script>
 
-  <!-- Your app logic (camera control + decoding; from Step 2) -->
-  <script src="script.js"></script>
+  <!-- App logic -->
+  script.js</script>
 </body>
 </html>
