@@ -1,9 +1,6 @@
 
 /* ============================================================================
-   SafeScan – Auto camera + Auto scan + Auto populate (native + fallback)
-   - Fixes previous syntax error and ZXing global mismatch
-   - Auto-start on non-iOS; iOS shows a one-tap overlay (required by Safari)
-   - Uses BarcodeDetector if available; falls back to ZXingBrowser
+   SafeScan – Auto camera + Auto scan + Auto populate (native + ZXing fallback)
    ============================================================================ */
 
 /* ---------- DOM ---------- */
@@ -15,8 +12,6 @@ const els = {
   canvas: byId('snapshot'),
   tapPrompt: byId('tapPrompt'),
   tapStart: byId('tapStart'),
-
-  // Results
   resName: byId('res-name'),
   resBrand: byId('res-brand'),
   resBarcode: byId('res-barcode'),
@@ -27,8 +22,8 @@ const els = {
 };
 
 /* ---------- Config ---------- */
-const AUTO_STOP_AFTER_DECODE = true;   // stop scanning after first successful decode
-const SCAN_INTERVAL_MS = 200;          // for BarcodeDetector loop
+const AUTO_STOP_AFTER_DECODE = true;   // set to false to keep scanning
+const SCAN_INTERVAL_MS = 200;
 
 /* ---------- State ---------- */
 let currentStream = null;
@@ -36,10 +31,10 @@ let usingDeviceId = null;
 let avoidList = [];
 let lastCode = null, lastAt = 0;
 
-let rafId = null;                      // rAF id for BarcodeDetector loop
-let barcodeDetector = null;            // native detector
+let rafId = null;                      // for BarcodeDetector
+let barcodeDetector = null;            // native
 let zxingReader = null;                // ZXing fallback
-let zxingControls = null;              // ZXing video controls
+let zxingControls = null;              // ZXing controls
 let scanning = false;
 
 /* ---------- Helpers ---------- */
@@ -76,7 +71,6 @@ async function loadAvoidList() {
     setStatus(`Avoid list loaded (${avoidList.length} items).`);
   } catch {
     avoidList = [];
-    setStatus('avoid_list.json not found (warnings may be “None”).');
   }
 }
 
@@ -99,19 +93,17 @@ async function openStream(preferBack = true, deviceId = null) {
     throw new Error('No video tracks returned.');
   }
 
-  // Attach stream
+  // Attach
   if (currentStream) currentStream.getTracks().forEach(t => t.stop());
   currentStream = stream;
-  try {
-    usingDeviceId = tracks[0]?.getSettings?.().deviceId || null;
-  } catch { usingDeviceId = null; }
+  try { usingDeviceId = tracks[0]?.getSettings?.().deviceId || null; } catch { usingDeviceId = null; }
 
   els.video.srcObject = stream;
   els.video.setAttribute('playsinline', 'true');
   els.video.setAttribute('autoplay', 'true');
   els.video.muted = true;
 
-  try { await els.video.play(); } catch { /* iOS needs a tap; handled below */ }
+  try { await els.video.play(); } catch { /* iOS will start after tap */ }
 }
 
 /* ---------- Scanner: native fast-path ---------- */
@@ -123,12 +115,8 @@ async function startNativeScan() {
         'ean_13','ean_8','upc_a','upc_e','code_128','code_39','qr_code','itf','codabar','data_matrix','pdf417','aztec'
       ]
     });
-  } catch {
-    barcodeDetector = null;
-    return false;
-  }
+  } catch { barcodeDetector = null; return false; }
 
-  // rAF loop that grabs frames and detects
   const ctx = els.canvas.getContext('2d');
   scanning = true;
   let lastTick = 0;
@@ -136,8 +124,6 @@ async function startNativeScan() {
   const loop = (ts) => {
     if (!scanning) return;
     rafId = requestAnimationFrame(loop);
-
-    // throttle to SCAN_INTERVAL_MS
     if (ts - lastTick < SCAN_INTERVAL_MS) return;
     lastTick = ts;
 
@@ -152,7 +138,6 @@ async function startNativeScan() {
       const c = codes[0];
       const text = c.rawValue || c.data || '';
       if (!text) return;
-
       const now = Date.now();
       if (text && (text !== lastCode || (now - lastAt) > 1500)) {
         lastCode = text; lastAt = now;
@@ -160,10 +145,7 @@ async function startNativeScan() {
         onBarcode(text, { format: c.format });
         if (AUTO_STOP_AFTER_DECODE) stopScanning();
       }
-    }).catch((e) => {
-      // continue scanning; native detector can throw intermittently
-      console.debug('Detector error', e);
-    });
+    }).catch((e) => console.debug('Detector error', e));
   };
 
   rafId = requestAnimationFrame(loop);
@@ -173,17 +155,22 @@ async function startNativeScan() {
 
 /* ---------- Scanner: ZXing fallback ---------- */
 async function startZXingScan() {
+  // Guard: must use ZXingBrowser (UMD global)
   if (!window.ZXingBrowser || !ZXingBrowser.BrowserMultiFormatReader) {
-    setStatus('ZXing not loaded. Check the script tag order.', true);
-    return false;
+    // Try dynamic load as a safety net
+    await loadZXingUMD();
+    if (!window.ZXingBrowser || !ZXingBrowser.BrowserMultiFormatReader) {
+      setStatus('ZXing not loaded. Check the script tag order.', true);
+      return false;
+    }
   }
+
   try {
     zxingReader = new ZXingBrowser.BrowserMultiFormatReader();
     scanning = true;
+    const deviceId = usingDeviceId || null;
 
-    // Prefer the current deviceId if available
-    let deviceId = usingDeviceId || null;
-    zxingControls = await zxingReader.decodeFromVideoDevice(deviceId, els.video, (result, err, controls) => {
+    zxingControls = await zxingReader.decodeFromVideoDevice(deviceId, els.video, (result, err) => {
       if (!scanning) return;
       if (result) {
         const text = result.getText();
@@ -213,6 +200,19 @@ function stopScanning() {
   try { zxingControls?.stop(); } catch {}
   try { ZXingBrowser?.BrowserCodeReader?._stopStreams?.(els.video); } catch {}
   try { zxingReader?.reset?.(); } catch {}
+}
+
+/* ---------- Dynamic loader (safety net) ---------- */
+function loadZXingUMD() {
+  return new Promise((resolve) => {
+    if (window.ZXingBrowser?.BrowserMultiFormatReader) return resolve();
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js';
+    s.crossOrigin = 'anonymous';
+    s.onload = () => resolve();
+    s.onerror = () => resolve(); // resolve anyway; caller will re-check
+    document.head.appendChild(s);
+  });
 }
 
 /* ---------- Barcode handler ---------- */
@@ -281,10 +281,10 @@ async function fetchAndDisplayProduct(barcode) {
     const ingArr = Array.isArray(p.ingredients) ? p.ingredients : [];
     const ingredientsList = buildIngredientsList(ingTxt, ingArr);
 
-    if (els.resName) els.resName.textContent = name || '—';
-    if (els.resBrand) els.resBrand.textContent = brand || '—';
-    if (els.resBarcode) els.resBarcode.textContent = barcode || '—';
-    if (els.resIngredients) els.resIngredients.textContent = (ingredientsList.join(', ') || '—');
+    els.resName.textContent = name || '—';
+    els.resBrand.textContent = brand || '—';
+    els.resBarcode.textContent = barcode || '—';
+    els.resIngredients.textContent = (ingredientsList.join(', ') || '—');
 
     const matches = matchIngredients(ingredientsList, avoidList);
     renderWarnings(name, matches);
@@ -308,16 +308,14 @@ async function boot() {
     return;
   }
 
-  await loadAvoidList();  // non-blocking if missing
+  await loadAvoidList();
 
-  // iOS needs a tap; desktop/Android can auto-start
   if (isIOS) {
     els.tapPrompt.style.display = 'flex';
     const onceStart = async () => {
       els.tapPrompt.style.display = 'none';
       try {
         await openStream(true);
-        // Try native first; fall back to ZXing
         const okNative = await startNativeScan();
         if (!okNative) await startZXingScan();
       } catch (e) {
