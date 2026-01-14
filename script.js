@@ -1,7 +1,7 @@
 
-// ===== SafeScan Mobile Camera (iOS + Android) =====
-// Works on GitHub Pages (HTTPS). Handles iOS Safari quirks (user gesture,
-// playsinline/autoplay/muted) and Android browsers (Chrome/Edge/Firefox).
+// ===== SafeScan Mobile Camera + Barcode Decoding (iOS + Android) =====
+// Works on HTTPS (GitHub Pages). Uses ZXing-JS to read common 1D/2D barcodes.
+// ZXing docs/examples: https://github.com/zxing-js/browser , https://deepwiki.com/zxing-js/library/5-examples
 
 (() => {
   const els = {
@@ -17,6 +17,8 @@
   let currentStream = null;
   let usingDeviceId = null;     // active camera deviceId
   let facing = 'environment';   // 'user' or 'environment'
+  let zxingReader = null;       // ZXing BrowserMultiFormatReader instance
+  let zxingActive = false;
 
   // Secure context check (HTTPS or localhost)
   const isSecure =
@@ -25,7 +27,7 @@
     location.hostname === '127.0.0.1';
 
   function setStatus(msg, isError = false) {
-    console.log('[Camera]', msg);
+    console.log('[Camera/Scan]', msg);
     if (els.status) {
       els.status.textContent = msg;
       els.status.style.color = isError ? '#c62828' : '#8be28b';
@@ -57,13 +59,14 @@
     els.stop.disabled    = !started;
   }
 
-  // Make sure iOS inline playback is allowed
+  // Ensure inline playback on iOS
   if (els.video) {
     els.video.setAttribute('playsinline', 'true');
     els.video.setAttribute('autoplay', 'true');
     els.video.muted = true;
   }
 
+  // --- Device enumeration (labels appear only after permission is granted) ---
   async function getVideoInputs() {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
@@ -74,6 +77,7 @@
     }
   }
 
+  // --- Start stream with preferred constraints and graceful fallback ---
   async function openStream(preferredFacing = 'environment', deviceId = null) {
     const constraints = deviceId
       ? { video: { deviceId: { exact: deviceId } }, audio: false }
@@ -123,23 +127,22 @@
     const track  = stream.getVideoTracks()[0];
     const info   = track.getSettings?.() || {};
     usingDeviceId = info.deviceId || null;
-
     const label = track.label || 'Camera';
     setStatus(`Camera ready: ${label}`);
 
     els.video.srcObject = stream;
 
-    // Safari/iOS often needs explicit play() after a user gesture
-    try {
-      await els.video.play();
-    } catch {
-      // If autoplay blocked, "Start Camera" button click will satisfy the gesture
-    }
+    // Safari/iOS may require explicit play() after user gesture
+    try { await els.video.play(); } catch { /* gesture will be required */ }
 
     enableControls(true);
+
+    // Start ZXing decoding (continuous)
+    await startDecoding();
   }
 
   function stopStream() {
+    stopDecoding();
     if (currentStream) {
       currentStream.getTracks().forEach(t => t.stop());
       currentStream = null;
@@ -158,13 +161,13 @@
       await startCamera();
       return;
     }
-
     // Pick a different deviceId than the current one
     const alt = inputs.find(d => d.deviceId !== usingDeviceId) || inputs[0];
     facing = (facing === 'environment') ? 'user' : 'environment';
     await startCamera(alt.deviceId);
   }
 
+  // Optional: capture a still frame to canvas (for debugging)
   function captureFrame() {
     if (!currentStream) return;
     const { videoWidth: w, videoHeight: h } = els.video;
@@ -206,14 +209,64 @@
     }
   }
 
-  // Wire UI (user gestures satisfy iOS autoplay policy)
+  // ===== ZXing decoding (continuous) =====
+  async function startDecoding() {
+    // Guard: ZXing library must be loaded (from Step 1 CDN)
+    if (!window.ZXing || !window.ZXing.BrowserMultiFormatReader) {
+      setStatus('ZXing library not loaded. Check the CDN <script> order.', true);
+      return;
+    }
+
+    // Clean previous reader
+    stopDecoding();
+
+    // Multi-format reader (EAN/UPC/Code128/QR/DataMatrix/etc.)
+    // You can pass hints/timeBetweenScans if needed; defaults are fine for most cases.
+    zxingReader = new window.ZXing.BrowserMultiFormatReader();
+    zxingActive = true;
+
+    try {
+      const deviceId = usingDeviceId || null;
+
+      // Continuously decode from the camera stream
+      // Signature: decodeFromVideoDevice(deviceId, videoElement, callback)
+      await zxingReader.decodeFromVideoDevice(deviceId, els.video, (result, err) => {
+        if (!zxingActive) return;
+
+        if (result) {
+          const text = result.getText ? result.getText() : String(result.text || '');
+          const format = result.getBarcodeFormat ? result.getBarcodeFormat() : (result.format || 'UNKNOWN');
+          setStatus(`Scanned: ${text} (${format})`);
+          // TODO: here you can: lookup product by EAN/UPC, filter formats, etc.
+        } else if (err && !(err instanceof window.ZXing.NotFoundException)) {
+          // NotFoundException = "no barcode in this frame" (normal)
+          console.warn('[ZXing] Error:', err);
+        }
+      });
+
+      setStatus('Scanning… point camera at the barcode.');
+    } catch (e) {
+      setStatus('ZXing failed to start decoding: ' + e, true);
+    }
+  }
+
+  function stopDecoding() {
+    if (zxingReader) {
+      try { zxingReader.reset(); } catch {}
+      zxingReader = null;
+    }
+    zxingActive = false;
+  }
+
+  // --- Wire UI (user gestures satisfy iOS autoplay policy) ---
   els.start?.addEventListener('click', () => startCamera());
   els.flip?.addEventListener('click', () => flipCamera());
   els.capture?.addEventListener('click', () => captureFrame());
   els.stop?.addEventListener('click', () => stopStream());
 
-  // Optional auto-start on load; if blocked (iOS), user taps "Start Camera"
+  // Optional auto-start; if blocked (iOS), user taps "Start Camera"
   document.addEventListener('DOMContentLoaded', async () => {
     try { await startCamera(); } catch { /* gesture will be required */ }
   });
 })();
+``
