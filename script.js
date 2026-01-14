@@ -1,9 +1,20 @@
 
-// ===== SafeScan Mobile Camera + Barcode Decoding (iOS + Android) =====
-// Works on HTTPS (GitHub Pages). Uses ZXing-JS to read common 1D/2D barcodes.
-// ZXing docs/examples: https://github.com/zxing-js/browser , https://deepwiki.com/zxing-js/library/5-examples
+// ===== SafeScan Mobile Camera + Barcode → Ingredients + Warnings =====
+// Works over HTTPS (GitHub Pages). Scans barcodes with ZXing-JS and
+// looks up ingredients via Open Food Facts (OFF) v2 API.
+// OFF docs/examples: https://openfoodfacts.github.io/openfoodfacts-server/api/tutorial-off-api/
+//
+// Expected avoid_list.json structure (repo root):
+// [
+//   { "name": "almond", "level": 2, "synonyms": ["almonds", "almond flour"] },
+//   { "name": "casein",  "level": 3, "synonyms": ["sodium caseinate", "caseinate"] },
+//   ...
+// ]
+//
+// If your schema differs (e.g., "severity" instead of "level"), see normalizeAvoidItem() below.
 
 (() => {
+  // --- UI elements ---
   const els = {
     video:   document.getElementById('preview'),
     status:  document.getElementById('camera-status'),
@@ -12,46 +23,40 @@
     capture: document.getElementById('capture'),
     stop:    document.getElementById('stop'),
     canvas:  document.getElementById('snapshot'),
+    // Results
+    resName: document.getElementById('res-name'),
+    resBrand: document.getElementById('res-brand'),
+    resBarcode: document.getElementById('res-barcode'),
+    resIngredients: document.getElementById('res-ingredients'),
+    resLvl2: document.getElementById('res-lvl2'),
+    resLvl3: document.getElementById('res-lvl3'),
+    resOK: document.getElementById('res-ok'),
   };
 
   let currentStream = null;
-  let usingDeviceId = null;     // active camera deviceId
-  let facing = 'environment';   // 'user' or 'environment'
-  let zxingReader = null;       // ZXing BrowserMultiFormatReader instance
+  let usingDeviceId = null;
+  let facing = 'environment';
+  let zxingReader = null;
   let zxingActive = false;
+  let avoidList = [];
+  let lastCode = null;
+  let lastFetchTs = 0;
 
-  // Secure context check (HTTPS or localhost)
   const isSecure =
     location.protocol === 'https:' ||
     location.hostname === 'localhost' ||
     location.hostname === '127.0.0.1';
 
+  // --- Status helper ---
   function setStatus(msg, isError = false) {
-    console.log('[Camera/Scan]', msg);
+    console.log('[SafeScan]', msg);
     if (els.status) {
       els.status.textContent = msg;
       els.status.style.color = isError ? '#c62828' : '#8be28b';
     }
   }
 
-  function explainError(err) {
-    const map = {
-      NotAllowedError:
-        'Permission denied. Allow camera in browser site settings; also check OS privacy settings for this browser.',
-      NotFoundError:
-        'No camera found or constraints too strict. Retrying with any available camera…',
-      NotReadableError:
-        'Camera busy or blocked by another app. Close Teams/Zoom/Meet and try again.',
-      OverconstrainedError:
-        'Requested constraints unsupported on this device. Using relaxed constraints.',
-      SecurityError:
-        'Access blocked due to context or permissions policy.',
-      AbortError:
-        'Camera start aborted—try again.',
-    };
-    return map[err?.name] || `Unexpected error: ${err?.message || err}`;
-  }
-
+  // --- Controls helper ---
   function enableControls(started) {
     els.start.disabled   = started;
     els.flip.disabled    = !started;
@@ -59,25 +64,42 @@
     els.stop.disabled    = !started;
   }
 
-  // Ensure inline playback on iOS
+  // --- Normalize avoid list entries ---
+  function normalizeAvoidItem(raw) {
+    const name = String(raw.name || raw.term || '').trim().toLowerCase();
+    const level = Number(raw.level ?? raw.severity ?? 0);
+    const synonyms = Array.isArray(raw.synonyms) ? raw.synonyms : [];
+    const allTerms = [name, ...synonyms].filter(Boolean).map(t => t.toLowerCase());
+    return { name, level, terms: allTerms };
+  }
+
+  // --- Load avoid_list.json once ---
+  async function loadAvoidList() {
+    try {
+      const res = await fetch('avoid_list.json', { cache: 'no-store' });
+      const data = await res.json();
+      avoidList = Array.isArray(data) ? data.map(normalizeAvoidItem) : [];
+      setStatus(`Avoid list loaded (${avoidList.length} items).`);
+    } catch (e) {
+      setStatus('Could not load avoid_list.json. Warnings will be unavailable.', true);
+      avoidList = [];
+    }
+  }
+
+  // --- Camera & ZXing setup ---
   if (els.video) {
     els.video.setAttribute('playsinline', 'true');
     els.video.setAttribute('autoplay', 'true');
     els.video.muted = true;
   }
 
-  // --- Device enumeration (labels appear only after permission is granted) ---
   async function getVideoInputs() {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
       return devices.filter(d => d.kind === 'videoinput');
-    } catch (e) {
-      console.warn('enumerateDevices failed:', e);
-      return [];
-    }
+    } catch (e) { return []; }
   }
 
-  // --- Start stream with preferred constraints and graceful fallback ---
   async function openStream(preferredFacing = 'environment', deviceId = null) {
     const constraints = deviceId
       ? { video: { deviceId: { exact: deviceId } }, audio: false }
@@ -85,28 +107,10 @@
 
     setStatus('Requesting camera…');
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      ensureTracks(stream);
-      await attachStream(stream);
-      return stream;
-    } catch (err) {
-      setStatus(explainError(err), true);
-
-      // Relax constraints: try "any camera"
-      if (err.name === 'OverconstrainedError' || err.name === 'NotFoundError') {
-        try {
-          const relaxed = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-          ensureTracks(relaxed);
-          await attachStream(relaxed);
-          return relaxed;
-        } catch (err2) {
-          setStatus(explainError(err2), true);
-          throw err2;
-        }
-      }
-      throw err;
-    }
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    ensureTracks(stream);
+    await attachStream(stream);
+    return stream;
   }
 
   function ensureTracks(stream) {
@@ -118,26 +122,17 @@
   }
 
   async function attachStream(stream) {
-    // Stop previous stream if any
-    if (currentStream) {
-      currentStream.getTracks().forEach(t => t.stop());
-    }
+    if (currentStream) currentStream.getTracks().forEach(t => t.stop());
     currentStream = stream;
 
     const track  = stream.getVideoTracks()[0];
     const info   = track.getSettings?.() || {};
     usingDeviceId = info.deviceId || null;
-    const label = track.label || 'Camera';
-    setStatus(`Camera ready: ${label}`);
 
     els.video.srcObject = stream;
-
-    // Safari/iOS may require explicit play() after user gesture
-    try { await els.video.play(); } catch { /* gesture will be required */ }
-
+    try { await els.video.play(); } catch {}
     enableControls(true);
 
-    // Start ZXing decoding (continuous)
     await startDecoding();
   }
 
@@ -156,24 +151,20 @@
   async function flipCamera() {
     const inputs = await getVideoInputs();
     if (inputs.length < 2) {
-      // Toggle facing; browser will choose if only one camera exists
       facing = (facing === 'environment') ? 'user' : 'environment';
       await startCamera();
       return;
     }
-    // Pick a different deviceId than the current one
     const alt = inputs.find(d => d.deviceId !== usingDeviceId) || inputs[0];
     facing = (facing === 'environment') ? 'user' : 'environment';
     await startCamera(alt.deviceId);
   }
 
-  // Optional: capture a still frame to canvas (for debugging)
   function captureFrame() {
     if (!currentStream) return;
     const { videoWidth: w, videoHeight: h } = els.video;
     if (!w || !h) return;
-    els.canvas.width = w;
-    els.canvas.height = h;
+    els.canvas.width = w; els.canvas.height = h;
     const ctx = els.canvas.getContext('2d');
     ctx.drawImage(els.video, 0, 0, w, h);
     setStatus('Frame captured.');
@@ -190,60 +181,39 @@
       alert('Your browser does not support camera access. Update to a modern browser.');
       return;
     }
-
+    await loadAvoidList();
     try {
       await openStream(facing, forceDeviceId);
-      // Log devices after permission (labels now visible)
-      getVideoInputs().then(cams =>
-        console.table(cams.map(d => ({ label: d.label, deviceId: d.deviceId })))
-      );
     } catch (err) {
-      alert(
-        'Camera failed to start.\n\n' +
-        explainError(err) +
-        '\n\nTroubleshooting:\n' +
-        '• Allow camera permission in browser site settings.\n' +
-        '• Check OS privacy settings for your browser.\n' +
-        '• Close other apps using the camera (Teams/Zoom/Meet).\n'
-      );
+      alert('Camera failed to start.\n\n' + (err?.message || err));
     }
   }
 
-  // ===== ZXing decoding (continuous) =====
+  // ===== ZXing continuous decoding =====
   async function startDecoding() {
-    // Guard: ZXing library must be loaded (from Step 1 CDN)
     if (!window.ZXing || !window.ZXing.BrowserMultiFormatReader) {
-      setStatus('ZXing library not loaded. Check the CDN <script> order.', true);
+      setStatus('ZXing library not loaded. Check CDN <script> order.', true);
       return;
     }
-
-    // Clean previous reader
     stopDecoding();
-
-    // Multi-format reader (EAN/UPC/Code128/QR/DataMatrix/etc.)
-    // You can pass hints/timeBetweenScans if needed; defaults are fine for most cases.
-    zxingReader = new window.ZXing.BrowserMultiFormatReader();
+    zxingReader = new window.ZXing.BrowserMultiFormatReader(250);
     zxingActive = true;
 
     try {
-      const deviceId = usingDeviceId || null;
-
-      // Continuously decode from the camera stream
-      // Signature: decodeFromVideoDevice(deviceId, videoElement, callback)
-      await zxingReader.decodeFromVideoDevice(deviceId, els.video, (result, err) => {
+      await zxingReader.decodeFromVideoDevice(usingDeviceId || null, els.video, (result, err) => {
         if (!zxingActive) return;
 
         if (result) {
-          const text = result.getText ? result.getText() : String(result.text || '');
-          const format = result.getBarcodeFormat ? result.getBarcodeFormat() : (result.format || 'UNKNOWN');
-          setStatus(`Scanned: ${text} (${format})`);
-          // TODO: here you can: lookup product by EAN/UPC, filter formats, etc.
+          const code = result.getText ? result.getText() : String(result.text || '');
+          if (shouldFetch(code)) {
+            lastCode = code;
+            lastFetchTs = Date.now();
+            fetchAndDisplayProduct(code);
+          }
         } else if (err && !(err instanceof window.ZXing.NotFoundException)) {
-          // NotFoundException = "no barcode in this frame" (normal)
           console.warn('[ZXing] Error:', err);
         }
       });
-
       setStatus('Scanning… point camera at the barcode.');
     } catch (e) {
       setStatus('ZXing failed to start decoding: ' + e, true);
@@ -251,22 +221,162 @@
   }
 
   function stopDecoding() {
-    if (zxingReader) {
-      try { zxingReader.reset(); } catch {}
-      zxingReader = null;
-    }
+    if (zxingReader) { try { zxingReader.reset(); } catch {} }
+    zxingReader = null;
     zxingActive = false;
   }
 
-  // --- Wire UI (user gestures satisfy iOS autoplay policy) ---
+  function shouldFetch(code) {
+    // Avoid hammering API on the same code repeatedly
+    if (!code) return false;
+    const now = Date.now();
+    if (code !== lastCode) return true;
+    return (now - lastFetchTs) > 2000; // 2s debounce
+  }
+
+  // ===== Product lookup (Open Food Facts v2) + display =====
+  async function fetchAndDisplayProduct(barcode) {
+    setStatus(`Looking up ${barcode}…`);
+
+    // Prefer v2 product endpoint; limit fields for performance
+    const base = 'https://world.openfoodfacts.org/api/v2/product/';
+    const fields = 'product_name,brands,ingredients_text,ingredients';
+    const url = `${base}${encodeURIComponent(barcode)}?fields=${encodeURIComponent(fields)}`;
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+
+      // OFF v2 returns: { code, product: {...}, status, status_verbose }
+      const p = data?.product || {};
+      const name = p.product_name || 'Unknown';
+      const brand = p.brands || '';
+      const ingText = (p.ingredients_text || '').trim();
+      const ingArray = Array.isArray(p.ingredients) ? p.ingredients.map(x => (x.text || '').trim()).filter(Boolean) : [];
+
+      // Prepare normalized ingredients list
+      const ingredientsList = buildIngredientsList(ingText, ingArray);
+
+      // Update UI
+      els.resName.textContent = name || '—';
+      els.resBrand.textContent = brand || '—';
+      els.resBarcode.textContent = barcode || '—';
+      els.resIngredients.textContent = (ingredientsList.join(', ') || '—');
+
+      // Match against avoid list
+      const matches = matchIngredients(ingredientsList, avoidList);
+
+      // Render warnings; include "Product (ingredient)" format as requested.
+      renderWarnings(name, matches);
+      setStatus('Ingredients loaded. Matches evaluated.');
+    } catch (e) {
+      setStatus('Lookup failed. Try again.', true);
+      console.error('OFF fetch error:', e);
+    }
+  }
+
+  function buildIngredientsList(text, arr) {
+    // If OFF provides structured list, prefer it; otherwise split text
+    if (arr && arr.length) {
+      return uniq(arr.map(normalizeIngredient).filter(Boolean));
+    }
+    if (!text) return [];
+    return uniq(
+      text.split(/[,;]+/).map(normalizeIngredient).filter(Boolean)
+    );
+  }
+
+  function normalizeIngredient(s) {
+    if (!s) return '';
+    // lower-case, trim, remove parentheses content and surrounding punctuation
+    let t = s.toLowerCase().trim();
+    t = t.replace(/\([^)]*\)/g, '');    // remove (...) notes
+    t = t.replace(/[\s\-_/]+/g, ' ').trim(); // collapse separators
+    t = t.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, ''); // strip non-alnum edges
+    return t;
+  }
+
+  function uniq(list) {
+    const seen = new Set(); const out = [];
+    for (const item of list) { if (!seen.has(item)) { seen.add(item); out.push(item); } }
+    return out;
+  }
+
+  function matchIngredients(ingredients, avoid) {
+    const lvl2 = [];
+    const lvl3 = [];
+
+    for (const entry of avoid) {
+      if (!entry || !entry.terms || !entry.level) continue;
+      const hit = findTermHit(ingredients, entry.terms);
+      if (hit) {
+        (entry.level === 3 ? lvl3 : lvl2).push({ term: hit, name: entry.name });
+      }
+    }
+    return { lvl2, lvl3 };
+  }
+
+  function findTermHit(ingredients, terms) {
+    // Whole-word match against normalized ingredients
+    for (const t of terms) {
+      const needle = t.toLowerCase();
+      for (const ing of ingredients) {
+        // Exact or contains whole word
+        if (ing === needle || new RegExp(`\\b${escapeRegex(needle)}\\b`).test(ing)) {
+          return needle;
+        }
+      }
+    }
+    return null;
+  }
+
+  function escapeRegex(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function renderWarnings(productName, matches) {
+    const { lvl2, lvl3 } = matches;
+
+    // Clear lists
+    [els.resLvl2, els.resLvl3, els.resOK].forEach(ul => { ul.innerHTML = ''; });
+
+    // Level 3
+    if (lvl3.length) {
+      lvl3.forEach(m => {
+        const li = document.createElement('li');
+        // Requested format: Product (ingredient)
+        li.textContent = `${productName} (${m.term})`;
+        els.resLvl3.appendChild(li);
+      });
+    } else {
+      els.resLvl3.innerHTML = '<li>None</li>';
+    }
+
+    // Level 2
+    if (lvl2.length) {
+      lvl2.forEach(m => {
+        const li = document.createElement('li');
+        li.textContent = `${productName} (${m.term})`;
+        els.resLvl2.appendChild(li);
+      });
+    } else {
+      els.resLvl2.innerHTML = '<li>None</li>';
+    }
+
+    // OK (no matches)
+    if (!lvl2.length && !lvl3.length) {
+      els.resOK.innerHTML = '<li>No Level 2 or Level 3 ingredients detected</li>';
+    } else {
+      els.resOK.innerHTML = '<li>—</li>';
+    }
+  }
+
+  // --- Wire UI ---
+  document.addEventListener('DOMContentLoaded', async () => {
+    try { await startCamera(); } catch {}
+  });
   els.start?.addEventListener('click', () => startCamera());
   els.flip?.addEventListener('click', () => flipCamera());
   els.capture?.addEventListener('click', () => captureFrame());
   els.stop?.addEventListener('click', () => stopStream());
-
-  // Optional auto-start; if blocked (iOS), user taps "Start Camera"
-  document.addEventListener('DOMContentLoaded', async () => {
-    try { await startCamera(); } catch { /* gesture will be required */ }
-  });
 })();
-``
