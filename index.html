@@ -5,273 +5,63 @@
   <meta charset="utf-8" />
   <title>SafeScan – Barcode & Ingredients</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  manifest.json
-
+  <meta name="theme-color" content="#0b5" />
   <style>
     :root { color-scheme: light dark; }
-    body {
-      margin: 0; background:#111; color:#eee;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    }
-    .container { max-width: 860px; margin: 0 auto; padding: 1rem; }
-    h1 { font-size: 1.25rem; margin: 0 0 .75rem; }
-    video { width: 100%; max-width: 640px; background:#000; border-radius: 12px; }
-    #camera-status { margin:.5rem 0; color:#8be28b; min-height:1.2em; }
-
-    .controls { display:flex; gap:.5rem; flex-wrap:wrap; margin:.5rem 0 1rem; }
-    .controls button {
-      background:#1f6feb; color:#fff; border: none; border-radius: 8px;
-      padding: .6rem .9rem; font-weight:600; cursor:pointer;
-    }
-    .controls button:disabled { opacity:.5; cursor:not-allowed; }
-
-    .results {
-      margin-top: 1rem; background:#1a1a1a; border-radius:12px; padding:1rem;
-    }
-    .results h2 { margin:.25rem 0 .5rem; font-size:1.1rem; }
-    .field { margin:.4rem 0; }
-    .label { font-weight:600; color:#bbb; margin-right:.3rem; }
-    .value { color:#fff; }
-    .ingredients { white-space:pre-wrap; line-height:1.35; color:#ddd; }
-
-    .warnings { margin-top:.6rem; }
-    .warn-section { margin:.4rem 0 .6rem; }
-    .warn-title { font-weight:700; }
-    .list { margin:.25rem 0 0 .75rem; }
-    .ok { color:#8be28b; }
-    .lvl2 { color:#ffcc66; }  /* amber */
-    .lvl3 { color:#ff6b6b; }  /* red */
-
-    canvas { display:block; max-width:640px; margin-top:.5rem; background:#222; border-radius:8px; }
-    .note { font-size:.9rem; color:#bbb; margin-top:.75rem; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 16px; }
+    header { margin-bottom: 12px; }
+    #preview { width: 100%; max-width: 640px; border: 1px solid #ccc; border-radius: 8px; background: #000; }
+    .controls { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .controls button { padding: 8px 12px; }
+    #camera-status { margin-top: 8px; min-height: 1.2em; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 12px; max-width: 900px; }
+    @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+    ul { margin: 4px 0 0 18px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   </style>
 </head>
 <body>
-  <div class="container">
+  <header>
     <h1>SafeScan – Barcode & Ingredients</h1>
+  </header>
 
-    <!-- Live preview -->
-    <video id="preview" playsinline autoplay muted></video>
-    <div id="camera-status"></div>
+  <section class="grid">
+    <div>
+      <video id="preview" playsinline autoplay muted></video>
+      <canvas id="snapshot" style="display:none"></canvas>
 
-    <!-- Controls -->
-    <div class="controls">
-      <button id="start">Start Camera</button>
-      <button id="flip" disabled>Flip</button>
-      <button id="capture" disabled>Capture</button>
-      <button id="stop" disabled>Stop</button>
-    </div>
+      <div class="controls">
+        <button id="start" type="button">Start Camera</button>
+        <button id="flip" type="button" disabled>Flip</button>
+        <button id="capture" type="button" disabled>Capture</button>
+        <button id="stop" type="button" disabled>Stop</button>
+      </div>
 
-    <!-- Optional capture canvas -->
-    <canvas id="snapshot"></canvas>
-
-    <p class="note">
-      If the preview doesn’t start automatically, tap <strong>Start Camera</strong>
-      (iOS Safari may require a user gesture).
-    </p>
-
-    <!-- Results panel -->
-    <div class="results" id="results">
-      <h2>Scan a barcode to see product ingredients & warnings</h2>
-      <div class="field"><span class="label">Product:</span><span id="res-name" class="value">—</span></div>
-      <div class="field"><span class="label">Brand:</span><span id="res-brand" class="value">—</span></div>
-      <div class="field"><span class="label">Barcode:</span><span id="res-barcode" class="value">—</span></div>
-      <div class="field"><span class="label">Ingredients:</span></div>
-      <div id="res-ingredients" class="ingredients">—</div>
-
-      <div class="warnings">
-        <div class="warn-section">
-          <div class="warn-title lvl3">Level 3 ⚠️</div>
-          <ul id="res-lvl3" class="list lvl3"><li>—</li></ul>
-        </div>
-        <div class="warn-section">
-          <div class="warn-title lvl2">Level 2 ⚠️</div>
-          <ul id="res-lvl2" class="list lvl2"><li>—</li></ul>
-        </div>
-        <div class="warn-section">
-          <div class="warn-title ok">No matches</div>
-          <ul id="res-ok" class="list ok"><li>—</li></ul>
-        </div>
+      <div id="camera-status" class="mono">
+        If the preview doesn’t start automatically, tap <strong>Start Camera</strong> (iOS may require a user gesture).
       </div>
     </div>
-  </div>
 
-  <!-- ZXing-JS (UMD build): MUST load before script.js -->
-  https://unpkg.com/@zxing/browser@latest/umd/index.min.js</script>
+    <div>
+      <h3>Scan a barcode to see product ingredients & warnings</h3>
+      <p><strong>Product:</strong> <span id="res-name">—</span></p>
+      <p><strong>Brand:</strong> <span id="res-brand">—</span></p>
+      <p><strong>Barcode:</strong> <span id="res-barcode">—</span></p>
+      <p><strong>Ingredients:</strong><br><span id="res-ingredients">—</span></p>
 
-  <!-- App logic -->
-  script.js</script>
-  
-<script>
-/* ===== SafeScan Inline Patch: Camera + ZXing (product barcodes) ===== */
-/* Works with your existing layout; no other files must change. */
+      <h4>Level 3 ⚠️</h4>
+      <ul id="res-lvl3"><li>—</li></ul>
 
-(function(){
-  // --- Grab elements (use your existing IDs if present) ---
-  const videoEl =
-    document.getElementById('preview') || document.querySelector('video');
-  const statusEl = document.getElementById('camera-status');
-  const startBtn =
-    document.getElementById('start') || document.getElementById('start-button') ||
-    document.querySelector('.start-camera') || document.querySelector('[data-start-camera]');
-  const stopBtn = document.getElementById('stop');
+      <h4>Level 2 ⚠️</h4>
+      <ul id="res-lvl2"><li>—</li></ul>
 
-  // --- Helpers ---
-  const isSecure =
-    location.protocol === 'https:' ||
-    location.hostname === 'localhost' ||
-    location.hostname === '127.0.0.1';
+      <h4>No matches</h4>
+      <ul id="res-ok"><li>—</li></ul>
+    </div>
+  </section>
 
-  function setStatus(msg, err=false){
-    console.log('[SafeScan]', msg);
-    if (statusEl){ statusEl.textContent = msg; statusEl.style.color = err ? '#c62828' : '#8be28b'; }
-  }
-
-  // iOS/Autoplay-friendly video attributes
-  if (videoEl){
-    videoEl.setAttribute('playsinline','true');
-    videoEl.setAttribute('autoplay','true');
-    videoEl.muted = true;
-  }
-
-  let stream = null;
-  let reader = null;
-  let lastCode = null, lastAt = 0;
-
-  async function startCamera(preferBack=true){
-    if (!isSecure){
-      setStatus('Camera requires HTTPS or localhost.', true);  // see MDN secure contexts
-      return;
-    }
-    if (!navigator.mediaDevices?.getUserMedia){
-      setStatus('getUserMedia() not supported in this browser.', true);
-      return;
-    }
-
-    const primary = {
-      video: preferBack
-        ? { facingMode: { ideal:'environment' }, width:{ideal:1280}, height:{ideal:720} }
-        : true,
-      audio:false
-    };
-
-    try {
-      stream = await navigator.mediaDevices.getUserMedia(primary);
-    } catch (e) {
-      // Fallback to "any camera"
-      setStatus(`Retrying camera (fallback): ${e?.name||e}`, true);
-      stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
-    }
-
-    const tracks = stream.getVideoTracks();
-    if (!tracks.length){ throw new Error('No video tracks.'); }
-    videoEl.srcObject = stream;
-    await videoEl.play().catch(()=>{});  // iOS may need user gesture (Start click)
-    setStatus(`Camera ready: ${tracks[0].label || 'Active'}`);
-
-    // Enable/disable buttons if present
-    if (startBtn) startBtn.disabled = true;
-    if (stopBtn)  stopBtn.disabled  = false;
-
-    // Begin decoding
-    await startDecoding();
-  }
-
-  function stopCamera(){
-    stopDecoding();
-    if (stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
-    if (videoEl) videoEl.srcObject = null;
-    setStatus('Camera stopped.');
-    if (startBtn) startBtn.disabled = false;
-    if (stopBtn)  stopBtn.disabled  = true;
-  }
-
-  function make1DHints(){
-    if (!window.ZXing) return null;
-    const ZX = window.ZXing;
-    const hints = new ZX.Map();
-    const formats = [
-      ZX.BarcodeFormat.EAN_13, ZX.BarcodeFormat.EAN_8,
-      ZX.BarcodeFormat.UPC_A,  ZX.BarcodeFormat.UPC_E,
-      ZX.BarcodeFormat.CODE_128
-    ];
-    hints.set(ZX.DecodeHintType.POSSIBLE_FORMATS, formats);
-    return hints;
-  }
-
-  async function startDecoding(){
-    if (!window.ZXing || !window.ZXing.BrowserMultiFormatReader){
-      setStatus('ZXing not loaded. Ensure its <script> is above this patch.', true);
-      return;
-    }
-    stopDecoding();
-    const hints = make1DHints();
-    reader = hints
-      ? new window.ZXing.BrowserMultiFormatReader(hints, 250)
-      : new window.ZXing.BrowserMultiFormatReader(undefined, 250);
-
-    // Use current deviceId if available; null lets ZXing choose
-    let deviceId = null;
-    try {
-      const s = videoEl.srcObject;
-      if (s && s.getVideoTracks()[0]?.getSettings){
-        deviceId = s.getVideoTracks()[0].getSettings().deviceId || null;
-      }
-    } catch {}
-
-    await reader.decodeFromVideoDevice(deviceId, videoEl, (result, err) => {
-      if (result){
-        const text = result.getText ? result.getText() : String(result.text||'');
-        const now  = Date.now();
-        // Simple debounce: ignore same code within 2s
-        if (text && (text !== lastCode || (now - lastAt) > 2000)){
-          lastCode = text; lastAt = now;
-          setStatus(`Scanned: ${text}`);
-          // If your page already defines fetchAndDisplayProduct(barcode), call it:
-          if (typeof window.fetchAndDisplayProduct === 'function'){
-            try { window.fetchAndDisplayProduct(text); } catch(e){ console.warn(e); }
-          }
-        }
-      } else if (err && !(err instanceof window.ZXing.NotFoundException)){
-        console.warn('[ZXing error]', err);
-      }
-    });
-
-    setStatus('Scanning… point camera at the barcode.');
-  }
-
-  function stopDecoding(){
-    if (reader){ try{ reader.reset(); }catch{} }
-    reader = null;
-  }
-
-  // --- Wire Start/Stop robustly (works even inside forms) ---
-  function wireStart(){
-    // Listen to multiple selectors in case your Start button has a different id/class
-    const selectors = ['#start', '#start-button', '.start-camera', '[data-start-camera]'];
-    document.addEventListener('click', (evt) => {
-      const target = evt.target.closest(selectors.join(','));
-      if (!target) return;
-      evt.preventDefault(); evt.stopPropagation();
-      if (target.tagName === 'BUTTON') target.type = 'button';  // avoid form submit
-      startCamera().catch(e => setStatus(e?.message || String(e), true));
-    }, { capture:true });
-
-    // Also wire Stop if present
-    if (stopBtn){
-      stopBtn.addEventListener('click', (e) => { e.preventDefault(); stopCamera(); });
-    }
-
-    // Make sure Start is enabled at load
-    if (startBtn){ startBtn.disabled = false; startBtn.type = 'button'; }
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    wireStart();
-    // Optional auto-start; if iOS blocks autoplay, user can tap Start.
-    startCamera().catch(()=>setStatus('Tap Start to begin (iOS may require a gesture).'));
-  });
-})();
-</script>
+  <!-- Load ZXing UMD BEFORE your app script -->
+  <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js" crossorigin="anonymous"></script>
+  <script src="script.js" defer></script>
 </body>
 </html>
