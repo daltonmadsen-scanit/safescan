@@ -1,25 +1,22 @@
 
 /* ============================================================================
-   SafeScan – Camera + Barcode + Ingredients + Level 2/3 Warnings (fixed)
-   - Fix: syntax error in `els`
-   - Fix: use ZXingBrowser (UMD) instead of ZXing
-   - Hardened Start button wiring; iOS-safe start
+   SafeScan – Auto camera + Auto scan + Auto populate (native + fallback)
+   - Fixes previous syntax error and ZXing global mismatch
+   - Auto-start on non-iOS; iOS shows a one-tap overlay (required by Safari)
+   - Uses BarcodeDetector if available; falls back to ZXingBrowser
    ============================================================================ */
 
 /* ---------- DOM ---------- */
 const byId = (id) => document.getElementById(id);
-const pick = (...ids) => ids.map(byId).find(Boolean) || null;
 
 const els = {
   video: byId('preview'),
   status: byId('camera-status'),
-  start: pick('start', 'start-button'),   // supports either id
-  flip: byId('flip'),
-  capture: byId('capture'),
-  stop: byId('stop'),
   canvas: byId('snapshot'),
+  tapPrompt: byId('tapPrompt'),
+  tapStart: byId('tapStart'),
 
-  // Results (optional)
+  // Results
   resName: byId('res-name'),
   resBrand: byId('res-brand'),
   resBarcode: byId('res-barcode'),
@@ -29,17 +26,21 @@ const els = {
   resOK: byId('res-ok'),
 };
 
+/* ---------- Config ---------- */
+const AUTO_STOP_AFTER_DECODE = true;   // stop scanning after first successful decode
+const SCAN_INTERVAL_MS = 200;          // for BarcodeDetector loop
+
 /* ---------- State ---------- */
 let currentStream = null;
-let currentControls = null; // ZXing controls handle
 let usingDeviceId = null;
-let facing = 'environment';
-let reader = null; // ZXing reader
-let zxingActive = false;
+let avoidList = [];
+let lastCode = null, lastAt = 0;
 
-let avoidList = []; // normalized avoid list
-let lastCode = null;
-let lastAt = 0;
+let rafId = null;                      // rAF id for BarcodeDetector loop
+let barcodeDetector = null;            // native detector
+let zxingReader = null;                // ZXing fallback
+let zxingControls = null;              // ZXing video controls
+let scanning = false;
 
 /* ---------- Helpers ---------- */
 const isSecure =
@@ -47,27 +48,16 @@ const isSecure =
   location.hostname === 'localhost' ||
   location.hostname === '127.0.0.1';
 
+const isIOS =
+  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 function setStatus(msg, isError = false) {
   console.log('[SafeScan]', msg);
   if (els.status) {
     els.status.textContent = msg;
     els.status.style.color = isError ? '#c62828' : 'inherit';
   }
-}
-
-function enableControls(started) {
-  const set = (el, disabled) => { if (el) el.disabled = disabled; };
-  set(els.start, started);
-  set(els.flip, !started);
-  set(els.capture, !started);
-  set(els.stop, !started);
-}
-
-/* iOS-friendly video configuration */
-if (els.video) {
-  els.video.setAttribute('playsinline', 'true');
-  els.video.setAttribute('autoplay', 'true');
-  els.video.muted = true;
 }
 
 /* ---------- Avoid list ---------- */
@@ -78,7 +68,6 @@ function normalizeAvoid(raw) {
   const terms = [name, ...synonyms].filter(Boolean).map(t => t.toLowerCase());
   return { name, level, terms };
 }
-
 async function loadAvoidList() {
   try {
     const res = await fetch('avoid_list.json', { cache: 'no-store' });
@@ -86,195 +75,153 @@ async function loadAvoidList() {
     avoidList = Array.isArray(data) ? data.map(normalizeAvoid) : [];
     setStatus(`Avoid list loaded (${avoidList.length} items).`);
   } catch {
-    setStatus('avoid_list.json not found (warnings will still show “None”).', true);
     avoidList = [];
+    setStatus('avoid_list.json not found (warnings may be “None”).');
   }
 }
 
 /* ---------- Camera ---------- */
-async function getVideoInputs() {
-  try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    return devices.filter(d => d.kind === 'videoinput');
-  } catch {
-    return [];
-  }
-}
-
 async function openStream(preferBack = true, deviceId = null) {
   const constraints = deviceId
     ? { video: { deviceId: { exact: deviceId } }, audio: false }
     : {
         video: preferBack
-          ? {
-              facingMode: { ideal: 'environment' },
-              width: { ideal: 1280 },
-              height: { ideal: 720 }
-            }
+          ? { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
           : true,
         audio: false
       };
 
   setStatus('Requesting camera…');
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-    ensureTracks(stream);
-    await attachStream(stream);
-    return stream;
-  } catch (err) {
-    setStatus(`Retrying camera (fallback): ${err?.name || err}`, true);
-    try {
-      const fallback = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-      ensureTracks(fallback);
-      await attachStream(fallback);
-      return fallback;
-    } catch (err2) {
-      setStatus(`Camera failed: ${err2?.name || err2}`, true);
-      return null;
-    }
-  }
-}
-
-function ensureTracks(stream) {
+  const stream = await navigator.mediaDevices.getUserMedia(constraints);
   const tracks = stream.getVideoTracks();
   if (!tracks || !tracks.length) {
     stream.getTracks().forEach(t => t.stop());
     throw new Error('No video tracks returned.');
   }
-}
 
-async function attachStream(stream) {
-  // Stop previous stream
+  // Attach stream
   if (currentStream) currentStream.getTracks().forEach(t => t.stop());
   currentStream = stream;
-
   try {
-    const settings = stream.getVideoTracks()[0]?.getSettings?.() || {};
-    usingDeviceId = settings.deviceId || null;
+    usingDeviceId = tracks[0]?.getSettings?.().deviceId || null;
   } catch { usingDeviceId = null; }
 
   els.video.srcObject = stream;
-  try { await els.video.play(); } catch { /* iOS needs a user gesture */ }
+  els.video.setAttribute('playsinline', 'true');
+  els.video.setAttribute('autoplay', 'true');
+  els.video.muted = true;
 
-  enableControls(true);
-  await startDecoding(); // start ZXing on this stream
+  try { await els.video.play(); } catch { /* iOS needs a tap; handled below */ }
 }
 
-function stopStream() {
-  stopDecoding();
-  if (currentStream) {
-    currentStream.getTracks().forEach(t => t.stop());
-    currentStream = null;
+/* ---------- Scanner: native fast-path ---------- */
+async function startNativeScan() {
+  if (!('BarcodeDetector' in window)) return false;
+  try {
+    barcodeDetector = new BarcodeDetector({
+      formats: [
+        'ean_13','ean_8','upc_a','upc_e','code_128','code_39','qr_code','itf','codabar','data_matrix','pdf417','aztec'
+      ]
+    });
+  } catch {
+    barcodeDetector = null;
+    return false;
   }
-  usingDeviceId = null;
-  setStatus('Camera stopped.');
-  enableControls(false);
-  if (els.video) els.video.srcObject = null;
-}
 
-async function flipCamera() {
-  const inputs = await getVideoInputs();
-  if (inputs.length < 2) {
-    facing = (facing === 'environment') ? 'user' : 'environment';
-    await startCamera();
-    return;
-  }
-  const alt = inputs.find(d => d.deviceId !== usingDeviceId) || inputs[0];
-  facing = (facing === 'environment') ? 'user' : 'environment';
-  await startCamera(alt.deviceId);
-}
-
-function captureFrame() {
-  if (!currentStream || !els.canvas) return;
-  const { videoWidth: w, videoHeight: h } = els.video;
-  if (!w || !h) return;
-  els.canvas.width = w; els.canvas.height = h;
+  // rAF loop that grabs frames and detects
   const ctx = els.canvas.getContext('2d');
-  ctx.drawImage(els.video, 0, 0, w, h);
-  setStatus('Frame captured.');
+  scanning = true;
+  let lastTick = 0;
+
+  const loop = (ts) => {
+    if (!scanning) return;
+    rafId = requestAnimationFrame(loop);
+
+    // throttle to SCAN_INTERVAL_MS
+    if (ts - lastTick < SCAN_INTERVAL_MS) return;
+    lastTick = ts;
+
+    const w = els.video.videoWidth, h = els.video.videoHeight;
+    if (!w || !h) return;
+
+    els.canvas.width = w; els.canvas.height = h;
+    ctx.drawImage(els.video, 0, 0, w, h);
+
+    barcodeDetector.detect(els.canvas).then((codes) => {
+      if (!codes || !codes.length) return;
+      const c = codes[0];
+      const text = c.rawValue || c.data || '';
+      if (!text) return;
+
+      const now = Date.now();
+      if (text && (text !== lastCode || (now - lastAt) > 1500)) {
+        lastCode = text; lastAt = now;
+        setStatus(`Scanned: ${text}`);
+        onBarcode(text, { format: c.format });
+        if (AUTO_STOP_AFTER_DECODE) stopScanning();
+      }
+    }).catch((e) => {
+      // continue scanning; native detector can throw intermittently
+      console.debug('Detector error', e);
+    });
+  };
+
+  rafId = requestAnimationFrame(loop);
+  setStatus('Scanning (native)… point camera at the barcode.');
+  return true;
 }
 
-async function startCamera(forceDeviceId = null) {
-  if (!isSecure) {
-    setStatus('Camera requires HTTPS or localhost.', true);
-    alert('Open over HTTPS (e.g., GitHub Pages) or run on localhost.');
-    return;
-  }
-  if (!('mediaDevices' in navigator) || !navigator.mediaDevices.getUserMedia) {
-    setStatus('getUserMedia() not supported in this browser.', true);
-    alert('Update to a modern browser.');
-    return;
-  }
-  await loadAvoidList();       // doesn’t block camera if missing
-  await openStream(true, forceDeviceId);
-}
-
-/* ---------- ZXing (barcode decoding) ---------- */
-async function startDecoding() {
-  // Ensure ZXingBrowser (UMD) is available
+/* ---------- Scanner: ZXing fallback ---------- */
+async function startZXingScan() {
   if (!window.ZXingBrowser || !ZXingBrowser.BrowserMultiFormatReader) {
-    setStatus('ZXing not loaded. Ensure the CDN script is before script.js', true);
-    return;
+    setStatus('ZXing not loaded. Check the script tag order.', true);
+    return false;
   }
-
-  stopDecoding(); // clear previous reader/controls
-
-  reader = new ZXingBrowser.BrowserMultiFormatReader(); // default hints cover major formats
-  zxingActive = true;
-
-  // Prefer the current deviceId if we have it; otherwise let ZXing choose.
-  let deviceId = null;
   try {
-    const s = els.video.srcObject;
-    if (s && s.getVideoTracks()[0]?.getSettings) {
-      deviceId = s.getVideoTracks()[0].getSettings().deviceId || null;
-    }
-  } catch { /* ignore */ }
+    zxingReader = new ZXingBrowser.BrowserMultiFormatReader();
+    scanning = true;
 
-  try {
-    currentControls = await reader.decodeFromVideoDevice(deviceId, els.video, (result, err, controls) => {
-      if (!zxingActive) return;
-
+    // Prefer the current deviceId if available
+    let deviceId = usingDeviceId || null;
+    zxingControls = await zxingReader.decodeFromVideoDevice(deviceId, els.video, (result, err, controls) => {
+      if (!scanning) return;
       if (result) {
-        const text = result.getText ? result.getText() : String(result.text || '');
+        const text = result.getText();
         const now = Date.now();
-        // Debounce: ignore the same code for 2 seconds
-        if (text && (text !== lastCode || (now - lastAt) > 2000)) {
+        if (text && (text !== lastCode || (now - lastAt) > 1500)) {
           lastCode = text; lastAt = now;
           setStatus(`Scanned: ${text}`);
           onBarcode(text, result);
+          if (AUTO_STOP_AFTER_DECODE) stopScanning();
         }
       } else if (err && !(err instanceof ZXingBrowser.NotFoundException)) {
-        console.debug('[ZXing error]', err);
+        console.debug('ZXing error', err);
       }
     });
 
-    setStatus('Scanning… point camera at the barcode.');
+    setStatus('Scanning (ZXing)… point camera at the barcode.');
+    return true;
   } catch (e) {
     setStatus(`ZXing start error: ${e?.message || e}`, true);
+    return false;
   }
 }
 
-function stopDecoding() {
-  zxingActive = false;
-  try { currentControls?.stop(); } catch { /* noop */ }
-  try { ZXingBrowser.BrowserCodeReader._stopStreams(els.video); } catch { /* noop */ }
-  try { reader?.reset(); } catch { /* noop */ }
-  reader = null;
-  currentControls = null;
+function stopScanning() {
+  scanning = false;
+  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  try { zxingControls?.stop(); } catch {}
+  try { ZXingBrowser?.BrowserCodeReader?._stopStreams?.(els.video); } catch {}
+  try { zxingReader?.reset?.(); } catch {}
 }
 
-/* ---------- Barcode handler: lookup + warnings ---------- */
-function onBarcode(barcode /*, result */) {
+/* ---------- Barcode handler ---------- */
+function onBarcode(barcode /*, meta */) {
   fetchAndDisplayProduct(barcode);
 }
 
 /* ---------- OFF lookup + ingredients ---------- */
-function uniq(list) {
-  const seen = new Set(); const out = [];
-  for (const item of list) { if (!seen.has(item)) { seen.add(item); out.push(item); } }
-  return out;
-}
+function uniq(list) { const s = new Set(); const out = []; for (const x of list) { if (!s.has(x)) { s.add(x); out.push(x); } } return out; }
 function normalizeIngredient(s) {
   if (!s) return '';
   let t = s.toLowerCase().trim();
@@ -284,9 +231,7 @@ function normalizeIngredient(s) {
   return t;
 }
 function buildIngredientsList(text, arr) {
-  if (arr && arr.length) {
-    return uniq(arr.map(x => normalizeIngredient(x?.text || '')).filter(Boolean));
-  }
+  if (arr && arr.length) return uniq(arr.map(x => normalizeIngredient(x?.text || '')).filter(Boolean));
   if (!text) return [];
   return uniq(text.split(/[,\[\];]+/).map(normalizeIngredient).filter(Boolean));
 }
@@ -295,9 +240,7 @@ function findTermHit(ingredients, terms) {
   for (const t of terms) {
     const needle = t.toLowerCase();
     for (const ing of ingredients) {
-      if (ing === needle || new RegExp(`\\b${escapeRegex(needle)}\\b`).test(ing)) {
-        return needle;
-      }
+      if (ing === needle || new RegExp(`\\b${escapeRegex(needle)}\\b`).test(ing)) return needle;
     }
   }
   return null;
@@ -313,25 +256,16 @@ function matchIngredients(ingredients, avoid) {
 }
 function renderWarnings(productName, matches) {
   const { lvl2, lvl3 } = matches;
-  function setList(ul, items, noneText) {
+  const setList = (ul, items, noneText) => {
     if (!ul) return;
     ul.innerHTML = '';
     if (!items.length) { ul.innerHTML = `<li>${noneText}</li>`; return; }
-    items.forEach(m => {
-      const li = document.createElement('li');
-      li.textContent = `${productName} (${m.term})`;
-      ul.appendChild(li);
-    });
-  }
+    items.forEach(m => { const li = document.createElement('li'); li.textContent = `${productName} (${m.term})`; ul.appendChild(li); });
+  };
   setList(els.resLvl3, lvl3, 'None');
   setList(els.resLvl2, lvl2, 'None');
-  if (els.resOK) {
-    els.resOK.innerHTML = (!lvl2.length && !lvl3.length)
-      ? '<li>No Level 2 or Level 3 ingredients detected</li>'
-      : '<li>—</li>';
-  }
+  if (els.resOK) els.resOK.innerHTML = (!lvl2.length && !lvl3.length) ? '<li>No Level 2 or Level 3 ingredients detected</li>' : '<li>—</li>';
 }
-
 async function fetchAndDisplayProduct(barcode) {
   setStatus(`Looking up ${barcode}…`);
   const base = 'https://world.openfoodfacts.org/api/v2/product/';
@@ -361,54 +295,45 @@ async function fetchAndDisplayProduct(barcode) {
   }
 }
 
-/* ---------- Start Button: robust wiring ---------- */
-function wireStartTriggers() {
-  if (els.start) { els.start.disabled = false; els.start.setAttribute('type','button'); }
-  const selectors = ['#start', '#start-button', '.start-camera', '[data-start-camera]'];
-  document.addEventListener('click', (evt) => {
-    const target = evt.target.closest(selectors.join(','));
-    if (target) {
-      evt.preventDefault();
-      evt.stopPropagation();
-      if (target.tagName === 'BUTTON') target.type = 'button';
-      startCamera().catch(err => setStatus(err?.message || String(err), true));
+/* ---------- Boot ---------- */
+async function boot() {
+  if (!isSecure) {
+    setStatus('Camera requires HTTPS or localhost.', true);
+    alert('Open over HTTPS (GitHub Pages) or run on localhost.');
+    return;
+  }
+  if (!('mediaDevices' in navigator) || !navigator.mediaDevices.getUserMedia) {
+    setStatus('getUserMedia() not supported in this browser.', true);
+    alert('Update to a modern browser.');
+    return;
+  }
+
+  await loadAvoidList();  // non-blocking if missing
+
+  // iOS needs a tap; desktop/Android can auto-start
+  if (isIOS) {
+    els.tapPrompt.style.display = 'flex';
+    const onceStart = async () => {
+      els.tapPrompt.style.display = 'none';
+      try {
+        await openStream(true);
+        // Try native first; fall back to ZXing
+        const okNative = await startNativeScan();
+        if (!okNative) await startZXingScan();
+      } catch (e) {
+        setStatus(`Camera error: ${e?.name || e}`, true);
+      }
+    };
+    els.tapStart.addEventListener('click', onceStart, { once: true });
+  } else {
+    try {
+      await openStream(true);
+      const okNative = await startNativeScan();
+      if (!okNative) await startZXingScan();
+    } catch (e) {
+      setStatus(`Camera error: ${e?.name || e}`, true);
     }
-  }, { capture: true });
-
-  // Also wire the direct reference (redundant but harmless)
-  if (els.start) {
-    els.start.addEventListener('click', (evt) => {
-      evt.preventDefault(); evt.stopPropagation();
-      els.start.type = 'button';
-      startCamera().catch(err => setStatus(err?.message || String(err), true));
-    });
   }
 }
 
-/* ---------- Other controls ---------- */
-function wireOtherControls() {
-  if (els.flip) els.flip.addEventListener('click', (e) => { e.preventDefault(); flipCamera(); });
-  if (els.capture) els.capture.addEventListener('click', (e) => { e.preventDefault(); captureFrame(); });
-  if (els.stop) els.stop.addEventListener('click', (e) => { e.preventDefault(); stopStream(); });
-  // Stop camera when the tab is hidden (saves battery)
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) stopStream();
-  });
-}
-
-/* ---------- Init ---------- */
-document.addEventListener('DOMContentLoaded', async () => {
-  wireStartTriggers();
-  wireOtherControls();
-
-  // Optional auto-start on non‑iOS (comment out if you prefer manual only)
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  if (!isIOS) {
-    try { await startCamera(); } catch { /* user can tap Start */ }
-  }
-});
-
-// Expose manual start for debugging in console
-window.SafeScanStart = () => startCamera();
-``
+document.addEventListener('DOMContentLoaded', boot);
