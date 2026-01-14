@@ -1,55 +1,58 @@
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
+  <title>SafeScan Camera</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SafeScan: Food Intolerance Barcode Checker</title>
-  <link rel="stylesheet" href="styles.css" />
+
+  <!-- PWA Manifest (optional, keep yours if present) -->
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#22c55e" />
+
+  <!-- Basic styles (feel free to merge with your styles.css) -->
+  <style>
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #111; color: #eee; }
+    .container { max-width: 720px; margin: 0 auto; padding: 1rem; }
+    h1 { font-size: 1.25rem; margin: 0 0 .75rem; }
+    video { width: 100%; max-width: 640px; background: #000; border-radius: 12px; }
+    #camera-status { margin: .5rem 0; color: #8be28b; }
+    .controls { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .5rem; }
+    .controls button {
+      background: #1f6feb; color: #fff; border: none; border-radius: 8px;
+      padding: .6rem .9rem; font-weight: 600; cursor: pointer;
+    }
+    .controls button:disabled { opacity: .5; cursor: not-allowed; }
+    canvas { display: block; max-width: 640px; margin-top: .5rem; background: #222; border-radius: 8px; }
+    .note { font-size: .9rem; color: #bbb; margin-top: .75rem; }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>SafeScan</h1>
-    <p>Scan a product barcode and check its ingredients against your intolerance list.</p>
-  </header>
-  <main>
-    <section class="scanner">
-      <div id="supportWarning" class="warning" hidden>
-        <strong>Note:</strong> Your browser may not support the native Barcode Detector API. You can still enter a barcode manually below. On Android Chrome, scanning should work. (Camera access requires HTTPS or <code>localhost</code>.)
-      </div>
-      <div class="controls">
-        <button id="startScanBtn">📷 Start camera scan</button>
-        <button id="stopScanBtn" disabled>⏹ Stop</button>
-      </div>
-      <video id="video" playsinline></video>
-    </section>
+  <div class="container">
+    <h1>SafeScan Camera</h1>
 
-    <section class="manual">
-      <label for="barcodeInput">Or enter a UPC/EAN barcode:</label>
-      <input id="barcodeInput" type="text" placeholder="eg. 012345678905" />
-      <button id="lookupBtn">Lookup Product</button>
-    </section>
+    <!-- Video preview: iOS needs playsinline + autoplay + muted -->
+    <video id="preview" playsinline autoplay muted></video>
 
-    <section class="ingredientsCheck">
-      <label for="ingredientsText">Or paste product ingredients to check:</label>
-      <textarea id="ingredientsText" rows="4" placeholder="Ingredients: ..."></textarea>
-      <button id="checkIngredientsBtn">Check Ingredients</button>
-    </section>
+    <!-- Status line (for messages/errors) -->
+    <div id="camera-status"></div>
 
-    <section id="result" class="result" hidden>
-      <h2>Result</h2>
-      <div id="productMeta"></div>
-      <div id="matchSummary"></div>
-      <div id="matches"></div>
-    </section>
-  </main>
-  <footer>
-    <p>Product data provided by Open Food Facts (crowdsourced). Always verify labels.</p>
-  </footer>
+    <!-- Controls -->
+    <div class="controls">
+      <button id="start">Start Camera</button>
+      <button id="flip" disabled>Flip</button>
+      <button id="capture" disabled>Capture</button>
+      <button id="stop" disabled>Stop</button>
+    </div>
 
-  <script src="https://unpkg.com/@zxing/library@latest"></script>
+    <!-- Captured frame -->
+    <canvas id="snapshot"></canvas>
+
+    <p class="note">
+      Tip: If the preview doesn’t start automatically, tap <strong>Start Camera</strong> (iOS Safari may require a user gesture).
+    </p>
+  </div>
+
+  <!-- Your camera logic -->
   <script src="script.js"></script>
-  <script> if('serviceWorker' in navigator){ navigator.serviceWorker.register('/service-worker.js'); } </script>
 </body>
 </html>
