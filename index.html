@@ -63,9 +63,9 @@
     </div>
   </div>
 
-  <!-- ZXing UMD (fallback when BarcodeDetector isn’t available) -->
+  <!-- Load ZXing UMD FIRST (no async/module) -->
   <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js" crossorigin="anonymous"></script>
-  <!-- Your app script -->
+  <!-- Your app script AFTER (defer keeps order & waits for DOM parse) -->
   <script src="./script.js" defer></script>
 </body>
 </html>
