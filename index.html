@@ -11,13 +11,18 @@
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 16px; }
     header { margin-bottom: 12px; }
     #preview { width: 100%; max-width: 640px; border: 1px solid #ccc; border-radius: 8px; background: #000; }
-    .controls { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
-    .controls button { padding: 8px 12px; }
-    #camera-status { margin-top: 8px; min-height: 1.2em; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 12px; max-width: 900px; }
+    #camera-status { margin-top: 8px; min-height: 1.2em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 12px; max-width: 1000px; }
     @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
     ul { margin: 4px 0 0 18px; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .tapPrompt {
+      position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.55); color: #fff; font-size: 1.1rem; z-index: 9999;
+      text-align: center; padding: 24px;
+    }
+    .tapPrompt button {
+      margin-top: 12px; padding: 10px 16px; border-radius: 8px; border: 0; background: #0b5; color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -29,17 +34,7 @@
     <div>
       <video id="preview" playsinline autoplay muted></video>
       <canvas id="snapshot" style="display:none"></canvas>
-
-      <div class="controls">
-        <button id="start" type="button">Start Camera</button>
-        <button id="flip" type="button" disabled>Flip</button>
-        <button id="capture" type="button" disabled>Capture</button>
-        <button id="stop" type="button" disabled>Stop</button>
-      </div>
-
-      <div id="camera-status" class="mono">
-        If the preview doesn’t start automatically, tap <strong>Start Camera</strong> (iOS may require a user gesture).
-      </div>
+      <div id="camera-status">Initializing…</div>
     </div>
 
     <div>
@@ -60,8 +55,17 @@
     </div>
   </section>
 
-  <!-- Load ZXing UMD BEFORE your app script -->
+  <!-- iOS “Tap to start” overlay (shown only on iOS) -->
+  <div id="tapPrompt" class="tapPrompt">
+    <div>
+      <div>Safari on iOS requires a tap to start the camera.</div>
+      <button id="tapStart" type="button">Start Camera</button>
+    </div>
+  </div>
+
+  <!-- ZXing UMD (fallback when BarcodeDetector isn’t available) -->
   <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js" crossorigin="anonymous"></script>
-  <script src="script.js" defer></script>
+  <!-- Your app script -->
+  <script src="./script.js" defer></script>
 </body>
 </html>
