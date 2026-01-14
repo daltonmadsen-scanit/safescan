@@ -1,29 +1,19 @@
 
 /* ============================================================================
-   SafeScan – Camera + Barcode Decoding + Ingredients + Level 2/3 Warnings
-   Paste over your current script.js (no other file changes required).
-
-   Notes:
-   - Camera requires HTTPS or localhost to access (secure context). [MDN] 
-   - iOS Safari often needs <video playsinline autoplay muted> + video.play(). [MDN]
-   - ZXing-JS must be loaded via CDN before this script. [ZXing docs]
-
-   References:
-   - Secure contexts & getUserMedia requirement: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia   (secure contexts) ¹
-   - iOS/Safari video playback details & examples: https://developer.mozilla.org/en-US/docs/Web/API/Media_Capture_and_Streams_API/Taking_still_photos ²
-   - ZXing-JS browser usage (UMD, BrowserMultiFormatReader): https://github.com/zxing-js/browser ³
+   SafeScan – Camera + Barcode + Ingredients + Level 2/3 Warnings
+   Hardened Start Button wiring so “Start Camera” works across IDs/classes.
    ============================================================================ */
 
 /* ---------- DOM ---------- */
 const els = {
   video:   document.getElementById('preview'),
   status:  document.getElementById('camera-status'),
-  start:   document.getElementById('start'),
+  start:   document.getElementById('start') || document.getElementById('start-button'),
   flip:    document.getElementById('flip'),
   capture: document.getElementById('capture'),
   stop:    document.getElementById('stop'),
   canvas:  document.getElementById('snapshot'),
-  // Results panel (optional but recommended)
+  // Results (optional)
   resName: document.getElementById('res-name'),
   resBrand: document.getElementById('res-brand'),
   resBarcode: document.getElementById('res-barcode'),
@@ -58,11 +48,11 @@ function setStatus(msg, isError = false) {
 }
 
 function enableControls(started) {
-  if (!els.start) return;
-  els.start.disabled   = started;
-  if (els.flip)    els.flip.disabled    = !started;
-  if (els.capture) els.capture.disabled = !started;
-  if (els.stop)    els.stop.disabled    = !started;
+  const toggle = (el, state) => { if (el) el.disabled = state; };
+  toggle(els.start,  started);
+  toggle(els.flip,   !started);
+  toggle(els.capture,!started);
+  toggle(els.stop,   !started);
 }
 
 /* ---------- iOS-friendly video ---------- */
@@ -277,8 +267,6 @@ function stopDecoding() {
 
 /* ---------- Barcode handler: lookup + warnings ---------- */
 function onBarcode(barcode /*, result */) {
-  // If you already had a handler, keep calling it here:
-  // e.g., fetchAndDisplayProduct(barcode). For convenience we implement it below.
   fetchAndDisplayProduct(barcode);
 }
 
@@ -291,7 +279,6 @@ function uniq(list) {
 
 function normalizeIngredient(s) {
   if (!s) return '';
-  // lower-case, trim, remove (...) notes, collapse separators, strip non-alnum edges
   let t = s.toLowerCase().trim();
   t = t.replace(/\([^)]*\)/g, '');           // remove parentheses content
   t = t.replace(/[\s\-_/]+/g, ' ').trim();   // collapse separators
@@ -368,16 +355,13 @@ async function fetchAndDisplayProduct(barcode) {
     const ingTxt = (p.ingredients_text || '').trim();
     const ingArr = Array.isArray(p.ingredients) ? p.ingredients : [];
 
-    // Normalize ingredients
     const ingredientsList = buildIngredientsList(ingTxt, ingArr);
 
-    // Update UI (if elements exist)
     if (els.resName)  els.resName.textContent  = name || '—';
     if (els.resBrand) els.resBrand.textContent = brand || '—';
     if (els.resBarcode) els.resBarcode.textContent = barcode || '—';
     if (els.resIngredients) els.resIngredients.textContent = (ingredientsList.join(', ') || '—');
 
-    // Match against avoid list and render warnings
     const matches = matchIngredients(ingredientsList, avoidList);
     renderWarnings(name, matches);
 
@@ -388,11 +372,57 @@ async function fetchAndDisplayProduct(barcode) {
   }
 }
 
-/* ---------- Wire UI ---------- */
+/* ---------- Start Button: Robust wiring ---------- */
+
+/** Attach Start action to multiple selectors and neutralize form submits. */
+function wireStartTriggers() {
+  // Explicitly re-enable the Start button at load (in case HTML had disabled)
+  if (els.start) { els.start.disabled = false; els.start.setAttribute('type','button'); }
+
+  const selectors = [
+    '#start', '#start-button', '.start-camera', '[data-start-camera]'
+  ];
+
+  // Delegate clicks so even future/dynamically-added buttons work
+  document.addEventListener('click', (evt) => {
+    const target = evt.target.closest(selectors.join(','));
+    if (target) {
+      // Prevent form submit / navigation
+      evt.preventDefault();
+      evt.stopPropagation();
+      // Ensure it's a button not submitting a form
+      if (target.tagName === 'BUTTON') target.type = 'button';
+      // Kick off camera
+      startCamera().catch(err => setStatus(err?.message || String(err), true));
+    }
+  }, { capture: true });
+
+  // Also wire the existing references if present
+  if (els.start) {
+    els.start.addEventListener('click', (evt) => {
+      evt.preventDefault(); evt.stopPropagation();
+      if (els.start.tagName === 'BUTTON') els.start.type = 'button';
+      startCamera().catch(err => setStatus(err?.message || String(err), true));
+    });
+  }
+}
+
+/* ---------- Wire other controls ---------- */
+function wireOtherControls() {
+  if (els.flip) els.flip.addEventListener('click', (e) => { e.preventDefault(); flipCamera(); });
+  if (els.capture) els.capture.addEventListener('click', (e) => { e.preventDefault(); captureFrame(); });
+  if (els.stop) els.stop.addEventListener('click', (e) => { e.preventDefault(); stopStream(); });
+}
+
+/* ---------- Init ---------- */
 document.addEventListener('DOMContentLoaded', async () => {
-  try { await startCamera(); } catch {}
+  // Wire Start triggers FIRST (so user gestures always work)
+  wireStartTriggers();
+  wireOtherControls();
+
+  // Optional: auto-start if allowed — if iOS blocks autoplay, Start button will work
+  try { await startCamera(); } catch (e) { /* user can tap Start */ }
 });
-if (els.start) els.start.addEventListener('click', () => startCamera());
-if (els.flip)  els.flip.addEventListener('click', () => flipCamera());
-if (els.capture) els.capture.addEventListener('click', () => captureFrame());
-if (els.stop) els.stop.addEventListener('click', () => stopStream());
+
+/* Expose manual start for debugging in console */
+window.SafeScanStart = () => startCamera();
