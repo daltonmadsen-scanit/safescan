@@ -101,5 +101,177 @@
 
   <!-- App logic -->
   script.js</script>
+  
+<script>
+/* ===== SafeScan Inline Patch: Camera + ZXing (product barcodes) ===== */
+/* Works with your existing layout; no other files must change. */
+
+(function(){
+  // --- Grab elements (use your existing IDs if present) ---
+  const videoEl =
+    document.getElementById('preview') || document.querySelector('video');
+  const statusEl = document.getElementById('camera-status');
+  const startBtn =
+    document.getElementById('start') || document.getElementById('start-button') ||
+    document.querySelector('.start-camera') || document.querySelector('[data-start-camera]');
+  const stopBtn = document.getElementById('stop');
+
+  // --- Helpers ---
+  const isSecure =
+    location.protocol === 'https:' ||
+    location.hostname === 'localhost' ||
+    location.hostname === '127.0.0.1';
+
+  function setStatus(msg, err=false){
+    console.log('[SafeScan]', msg);
+    if (statusEl){ statusEl.textContent = msg; statusEl.style.color = err ? '#c62828' : '#8be28b'; }
+  }
+
+  // iOS/Autoplay-friendly video attributes
+  if (videoEl){
+    videoEl.setAttribute('playsinline','true');
+    videoEl.setAttribute('autoplay','true');
+    videoEl.muted = true;
+  }
+
+  let stream = null;
+  let reader = null;
+  let lastCode = null, lastAt = 0;
+
+  async function startCamera(preferBack=true){
+    if (!isSecure){
+      setStatus('Camera requires HTTPS or localhost.', true);  // see MDN secure contexts
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia){
+      setStatus('getUserMedia() not supported in this browser.', true);
+      return;
+    }
+
+    const primary = {
+      video: preferBack
+        ? { facingMode: { ideal:'environment' }, width:{ideal:1280}, height:{ideal:720} }
+        : true,
+      audio:false
+    };
+
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(primary);
+    } catch (e) {
+      // Fallback to "any camera"
+      setStatus(`Retrying camera (fallback): ${e?.name||e}`, true);
+      stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
+    }
+
+    const tracks = stream.getVideoTracks();
+    if (!tracks.length){ throw new Error('No video tracks.'); }
+    videoEl.srcObject = stream;
+    await videoEl.play().catch(()=>{});  // iOS may need user gesture (Start click)
+    setStatus(`Camera ready: ${tracks[0].label || 'Active'}`);
+
+    // Enable/disable buttons if present
+    if (startBtn) startBtn.disabled = true;
+    if (stopBtn)  stopBtn.disabled  = false;
+
+    // Begin decoding
+    await startDecoding();
+  }
+
+  function stopCamera(){
+    stopDecoding();
+    if (stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+    if (videoEl) videoEl.srcObject = null;
+    setStatus('Camera stopped.');
+    if (startBtn) startBtn.disabled = false;
+    if (stopBtn)  stopBtn.disabled  = true;
+  }
+
+  function make1DHints(){
+    if (!window.ZXing) return null;
+    const ZX = window.ZXing;
+    const hints = new ZX.Map();
+    const formats = [
+      ZX.BarcodeFormat.EAN_13, ZX.BarcodeFormat.EAN_8,
+      ZX.BarcodeFormat.UPC_A,  ZX.BarcodeFormat.UPC_E,
+      ZX.BarcodeFormat.CODE_128
+    ];
+    hints.set(ZX.DecodeHintType.POSSIBLE_FORMATS, formats);
+    return hints;
+  }
+
+  async function startDecoding(){
+    if (!window.ZXing || !window.ZXing.BrowserMultiFormatReader){
+      setStatus('ZXing not loaded. Ensure its <script> is above this patch.', true);
+      return;
+    }
+    stopDecoding();
+    const hints = make1DHints();
+    reader = hints
+      ? new window.ZXing.BrowserMultiFormatReader(hints, 250)
+      : new window.ZXing.BrowserMultiFormatReader(undefined, 250);
+
+    // Use current deviceId if available; null lets ZXing choose
+    let deviceId = null;
+    try {
+      const s = videoEl.srcObject;
+      if (s && s.getVideoTracks()[0]?.getSettings){
+        deviceId = s.getVideoTracks()[0].getSettings().deviceId || null;
+      }
+    } catch {}
+
+    await reader.decodeFromVideoDevice(deviceId, videoEl, (result, err) => {
+      if (result){
+        const text = result.getText ? result.getText() : String(result.text||'');
+        const now  = Date.now();
+        // Simple debounce: ignore same code within 2s
+        if (text && (text !== lastCode || (now - lastAt) > 2000)){
+          lastCode = text; lastAt = now;
+          setStatus(`Scanned: ${text}`);
+          // If your page already defines fetchAndDisplayProduct(barcode), call it:
+          if (typeof window.fetchAndDisplayProduct === 'function'){
+            try { window.fetchAndDisplayProduct(text); } catch(e){ console.warn(e); }
+          }
+        }
+      } else if (err && !(err instanceof window.ZXing.NotFoundException)){
+        console.warn('[ZXing error]', err);
+      }
+    });
+
+    setStatus('Scanning… point camera at the barcode.');
+  }
+
+  function stopDecoding(){
+    if (reader){ try{ reader.reset(); }catch{} }
+    reader = null;
+  }
+
+  // --- Wire Start/Stop robustly (works even inside forms) ---
+  function wireStart(){
+    // Listen to multiple selectors in case your Start button has a different id/class
+    const selectors = ['#start', '#start-button', '.start-camera', '[data-start-camera]'];
+    document.addEventListener('click', (evt) => {
+      const target = evt.target.closest(selectors.join(','));
+      if (!target) return;
+      evt.preventDefault(); evt.stopPropagation();
+      if (target.tagName === 'BUTTON') target.type = 'button';  // avoid form submit
+      startCamera().catch(e => setStatus(e?.message || String(e), true));
+    }, { capture:true });
+
+    // Also wire Stop if present
+    if (stopBtn){
+      stopBtn.addEventListener('click', (e) => { e.preventDefault(); stopCamera(); });
+    }
+
+    // Make sure Start is enabled at load
+    if (startBtn){ startBtn.disabled = false; startBtn.type = 'button'; }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    wireStart();
+    // Optional auto-start; if iOS blocks autoplay, user can tap Start.
+    startCamera().catch(()=>setStatus('Tap Start to begin (iOS may require a gesture).'));
+  });
+})();
+</script>
 </body>
 </html>
