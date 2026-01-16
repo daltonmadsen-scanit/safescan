@@ -1,0 +1,2425 @@
+[
+  {
+    "name": "Acai Berry",
+    "level": 3,
+    "synonyms": [
+      "Acai Berry",
+      "Acai Berrys",
+      "nan",
+      "nans",
+      "acai berry",
+      "acai berrys",
+      "açai",
+      "acai",
+      "acais"
+    ]
+  },
+  {
+    "name": "almond Cheese",
+    "level": 3,
+    "synonyms": [
+      "Cheese (almond)",
+      "Cheese",
+      "Cheeses",
+      "almond",
+      "almonds",
+      "almond Cheese",
+      "almond Cheeses",
+      "almond cheese",
+      "almond cheeses",
+      "almond-based cheese",
+      "almond-based cheeses",
+      "almond milk cheese",
+      "almond milk cheeses"
+    ]
+  },
+  {
+    "name": "Aluminium Silicate",
+    "level": 3,
+    "synonyms": [
+      "Aluminium Silicate",
+      "Aluminium Silicates",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "asiago Cheese",
+    "level": 3,
+    "synonyms": [
+      "Cheese (asiago)",
+      "Cheese",
+      "Cheeses",
+      "asiago",
+      "asiagos",
+      "asiago Cheese",
+      "asiago Cheeses",
+      "asiago cheese",
+      "asiago cheeses"
+    ]
+  },
+  {
+    "name": "atlantic Scallops",
+    "level": 3,
+    "synonyms": [
+      "Scallops (atlantic)",
+      "Scallops",
+      "atlantic",
+      "atlantics",
+      "atlantic Scallops",
+      "atlantic scallops",
+      "scallops"
+    ]
+  },
+  {
+    "name": "Avocado Oil",
+    "level": 3,
+    "synonyms": [
+      "Avocado Oil",
+      "Avocado Oils",
+      "nan",
+      "nans",
+      "avocado oil",
+      "avocado oils",
+      "persea gratissima oil",
+      "persea gratissima oils"
+    ]
+  },
+  {
+    "name": "Beef Bone Broth",
+    "level": 3,
+    "synonyms": [
+      "Beef Bone Broth",
+      "Beef Bone Broths",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "beef Liver",
+    "level": 3,
+    "synonyms": [
+      "Liver (beef)",
+      "Liver",
+      "Livers",
+      "beef",
+      "beefs",
+      "beef Liver",
+      "beef Livers"
+    ]
+  },
+  {
+    "name": "blue Catfish",
+    "level": 3,
+    "synonyms": [
+      "Catfish (blue)",
+      "Catfish",
+      "Catfishs",
+      "blue",
+      "blues",
+      "blue Catfish",
+      "blue Catfishs"
+    ]
+  },
+  {
+    "name": "blue Crab",
+    "level": 3,
+    "synonyms": [
+      "Crab (blue)",
+      "Crab",
+      "Crabs",
+      "blue",
+      "blues",
+      "blue Crab",
+      "blue Crabs"
+    ]
+  },
+  {
+    "name": "Blue Mussels",
+    "level": 3,
+    "synonyms": [
+      "Blue Mussels",
+      "nan",
+      "nans",
+      "blue mussels",
+      "mussels"
+    ]
+  },
+  {
+    "name": "Broccoli",
+    "level": 3,
+    "synonyms": [
+      "Broccoli",
+      "Broccolis",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "brown Prawns",
+    "level": 3,
+    "synonyms": [
+      "Prawns (brown)",
+      "Prawns",
+      "brown",
+      "browns",
+      "brown Prawns"
+    ]
+  },
+  {
+    "name": "Buckwheat",
+    "level": 3,
+    "synonyms": [
+      "Buckwheat",
+      "Buckwheats",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "bulgur Wheat",
+    "level": 3,
+    "synonyms": [
+      "Wheat (bulgur)",
+      "Wheat",
+      "Wheats",
+      "bulgur",
+      "bulgurs",
+      "bulgur Wheat",
+      "bulgur Wheats",
+      "bulgur wheat",
+      "bulgur wheats",
+      "burghul",
+      "burghuls"
+    ]
+  },
+  {
+    "name": "Button",
+    "level": 3,
+    "synonyms": [
+      "Button",
+      "Buttons",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Calcium 5-ribonucleotide",
+    "level": 3,
+    "synonyms": [
+      "Calcium 5-ribonucleotide",
+      "nan",
+      "nans",
+      "calcium 5 ribonucleotide",
+      "calcium 5 ribonucleotides",
+      "calcium 5'-ribonucleotide"
+    ]
+  },
+  {
+    "name": "Calcium Diglutamate",
+    "level": 3,
+    "synonyms": [
+      "Calcium Diglutamate",
+      "Calcium Diglutamates",
+      "nan",
+      "nans",
+      "calcium diglutamate",
+      "calcium diglutamates",
+      "calcium glutamate",
+      "calcium glutamates"
+    ]
+  },
+  {
+    "name": "Calcium Gluconate",
+    "level": 3,
+    "synonyms": [
+      "Calcium Gluconate",
+      "Calcium Gluconates",
+      "nan",
+      "nans",
+      "calcium gluconate",
+      "calcium gluconates",
+      "e578"
+    ]
+  },
+  {
+    "name": "Calcium Malate",
+    "level": 3,
+    "synonyms": [
+      "Calcium Malate",
+      "Calcium Malates",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Calcium Sulphate",
+    "level": 3,
+    "synonyms": [
+      "Calcium Sulphate",
+      "Calcium Sulphates",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Canola Oil",
+    "level": 3,
+    "synonyms": [
+      "Canola Oil",
+      "Canola Oils",
+      "nan",
+      "nans",
+      "canola oil",
+      "canola oils",
+      "rapeseed oil",
+      "rapeseed oils"
+    ]
+  },
+  {
+    "name": "Caraway",
+    "level": 3,
+    "synonyms": [
+      "Caraway",
+      "Caraways",
+      "nan",
+      "nans",
+      "caraway",
+      "caraways",
+      "carum carvi",
+      "carum carvis"
+    ]
+  },
+  {
+    "name": "Carboxymethyl Cellulose",
+    "level": 3,
+    "synonyms": [
+      "Carboxymethyl Cellulose",
+      "Carboxymethyl Celluloses",
+      "nan",
+      "nans",
+      "carboxymethyl cellulose",
+      "carboxymethyl celluloses",
+      "cellulose gum",
+      "cellulose gums",
+      "cmc",
+      "cmcs",
+      "e466",
+      "sodium carboxymethylcellulose",
+      "sodium carboxymethylcelluloses"
+    ]
+  },
+  {
+    "name": "Carrageenan",
+    "level": 3,
+    "synonyms": [
+      "Carrageenan",
+      "Carrageenans",
+      "nan",
+      "nans",
+      "carrageenan",
+      "carrageenans",
+      "e407",
+      "irish moss",
+      "chondrus crispus"
+    ]
+  },
+  {
+    "name": "Carrots",
+    "level": 3,
+    "synonyms": [
+      "Carrots",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Casein",
+    "level": 3,
+    "synonyms": [
+      "Casein",
+      "Caseins",
+      "nan",
+      "nans",
+      "casein",
+      "caseins",
+      "caseinate",
+      "caseinates",
+      "milk protein",
+      "milk proteins"
+    ]
+  },
+  {
+    "name": "Cassava Flour",
+    "level": 3,
+    "synonyms": [
+      "Cassava Flour",
+      "Cassava Flours",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Cherries",
+    "level": 3,
+    "synonyms": [
+      "Cherries",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Chicken Dark",
+    "level": 3,
+    "synonyms": [
+      "Chicken Dark",
+      "Chicken Darks",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Coconut Oil",
+    "level": 3,
+    "synonyms": [
+      "Coconut Oil",
+      "Coconut Oils",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "colby Cheese",
+    "level": 3,
+    "synonyms": [
+      "Cheese (colby)",
+      "Cheese",
+      "Cheeses",
+      "colby",
+      "colbys",
+      "colby Cheese",
+      "colby Cheeses",
+      "colby cheese",
+      "colby cheeses"
+    ]
+  },
+  {
+    "name": "Collard Greens",
+    "level": 3,
+    "synonyms": [
+      "Collard Greens",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "cortland Apple",
+    "level": 3,
+    "synonyms": [
+      "Apple (cortland)",
+      "Apple",
+      "Apples",
+      "cortland",
+      "cortlands",
+      "cortland Apple",
+      "cortland Apples"
+    ]
+  },
+  {
+    "name": "cotija Cheese",
+    "level": 3,
+    "synonyms": [
+      "Cheese (cotija)",
+      "Cheese",
+      "Cheeses",
+      "cotija",
+      "cotijas",
+      "cotija Cheese",
+      "cotija Cheeses",
+      "cotija cheese",
+      "cotija cheeses"
+    ]
+  },
+  {
+    "name": "Cream",
+    "level": 3,
+    "synonyms": [
+      "Cream",
+      "Creams",
+      "nan",
+      "nans",
+      "cream",
+      "creams",
+      "heavy cream",
+      "heavy creams",
+      "whipping cream",
+      "whipping creams"
+    ]
+  },
+  {
+    "name": "dark Brown Sugar",
+    "level": 3,
+    "synonyms": [
+      "Brown Sugar (dark)",
+      "Brown Sugar",
+      "Brown Sugars",
+      "dark",
+      "darks",
+      "dark Brown Sugar",
+      "dark Brown Sugars"
+    ]
+  },
+  {
+    "name": "Diastatic Malt Powder",
+    "level": 3,
+    "synonyms": [
+      "Diastatic Malt Powder",
+      "Diastatic Malt Powders",
+      "nan",
+      "nans",
+      "diastatic malt powder",
+      "diastatic malt powders",
+      "malted barley powder",
+      "malted barley powders",
+      "diastase",
+      "diastases"
+    ]
+  },
+  {
+    "name": "Dicalcium Ionisate",
+    "level": 3,
+    "synonyms": [
+      "Dicalcium Ionisate",
+      "Dicalcium Ionisates",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Edamame",
+    "level": 3,
+    "synonyms": [
+      "Edamame",
+      "Edamames",
+      "nan",
+      "nans",
+      "edamame",
+      "edamames",
+      "green soybeans",
+      "young soybeans"
+    ]
+  },
+  {
+    "name": "Feijoa",
+    "level": 3,
+    "synonyms": [
+      "Feijoa",
+      "Feijoas",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Figs",
+    "level": 3,
+    "synonyms": [
+      "Figs",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Ghee",
+    "level": 3,
+    "synonyms": [
+      "Ghee",
+      "Ghees",
+      "nan",
+      "nans",
+      "ghee",
+      "ghees",
+      "clarified butter",
+      "clarified butters"
+    ]
+  },
+  {
+    "name": "ground Boar Pork",
+    "level": 3,
+    "synonyms": [
+      "Boar Pork (ground)",
+      "Boar Pork",
+      "Boar Porks",
+      "ground",
+      "grounds",
+      "ground Boar Pork",
+      "ground Boar Porks"
+    ]
+  },
+  {
+    "name": "ground Wagyu Beef",
+    "level": 3,
+    "synonyms": [
+      "Wagyu Beef (ground)",
+      "Wagyu Beef",
+      "Wagyu Beefs",
+      "ground",
+      "grounds",
+      "ground Wagyu Beef",
+      "ground Wagyu Beefs"
+    ]
+  },
+  {
+    "name": "Gum Arabic",
+    "level": 3,
+    "synonyms": [
+      "Gum Arabic",
+      "Gum Arabics",
+      "nan",
+      "nans",
+      "gum arabic",
+      "gum arabics",
+      "acacia gum",
+      "acacia gums",
+      "gum acacia",
+      "gum acacias",
+      "e414"
+    ]
+  },
+  {
+    "name": "Habanero Pepper",
+    "level": 3,
+    "synonyms": [
+      "Habanero Pepper",
+      "Habanero Peppers",
+      "nan",
+      "nans",
+      "habanero pepper",
+      "habanero peppers",
+      "habanero",
+      "habaneros"
+    ]
+  },
+  {
+    "name": "Harissa",
+    "level": 3,
+    "synonyms": [
+      "Harissa",
+      "Harissas",
+      "nan",
+      "nans",
+      "harissa",
+      "harissas",
+      "harissa paste",
+      "harissa pastes"
+    ]
+  },
+  {
+    "name": "havarti Cheese",
+    "level": 3,
+    "synonyms": [
+      "Cheese (havarti)",
+      "Cheese",
+      "Cheeses",
+      "havarti",
+      "havartis",
+      "havarti Cheese",
+      "havarti Cheeses",
+      "havarti cheese",
+      "havarti cheeses"
+    ]
+  },
+  {
+    "name": "Hemp",
+    "level": 3,
+    "synonyms": [
+      "Hemp",
+      "Hemps",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "honey crisp Apple",
+    "level": 3,
+    "synonyms": [
+      "Apple (honey crisp)",
+      "Apple",
+      "Apples",
+      "honey crisp",
+      "honey crisps",
+      "honey crisp Apple",
+      "honey crisp Apples"
+    ]
+  },
+  {
+    "name": "Horseradish",
+    "level": 3,
+    "synonyms": [
+      "Horseradish",
+      "Horseradishs",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Hydroxypropylcellulose",
+    "level": 3,
+    "synonyms": [
+      "Hydroxypropylcellulose",
+      "Hydroxypropylcelluloses",
+      "nan",
+      "nans",
+      "hydroxypropylcellulose",
+      "hydroxypropylcelluloses",
+      "hpc",
+      "hpcs",
+      "hydroxypropyl cellulose",
+      "hydroxypropyl celluloses",
+      "e463"
+    ]
+  },
+  {
+    "name": "japanese Eel",
+    "level": 3,
+    "synonyms": [
+      "Eel (japanese)",
+      "Eel",
+      "Eels",
+      "japanese",
+      "japaneses",
+      "japanese Eel",
+      "japanese Eels"
+    ]
+  },
+  {
+    "name": "jasmine Rice",
+    "level": 3,
+    "synonyms": [
+      "Rice (jasmine)",
+      "Rice",
+      "Rices",
+      "jasmine",
+      "jasmines",
+      "jasmine Rice",
+      "jasmine Rices",
+      "rice jasmine",
+      "rice jasmines",
+      "jasmine rice",
+      "jasmine rices"
+    ]
+  },
+  {
+    "name": "kumamoto Oysters",
+    "level": 3,
+    "synonyms": [
+      "Oysters (kumamoto)",
+      "Oysters",
+      "kumamoto",
+      "kumamotos",
+      "kumamoto Oysters",
+      "kumamoto oysters",
+      "kumamoto oyster",
+      "oysters"
+    ]
+  },
+  {
+    "name": "Lactitol",
+    "level": 3,
+    "synonyms": [
+      "Lactitol",
+      "Lactitols",
+      "nan",
+      "nans",
+      "lactitol",
+      "lactitols",
+      "e966"
+    ]
+  },
+  {
+    "name": "lesser Amberjack",
+    "level": 3,
+    "synonyms": [
+      "Amberjack (lesser)",
+      "Amberjack",
+      "Amberjacks",
+      "lesser",
+      "lessers",
+      "lesser Amberjack",
+      "lesser Amberjacks"
+    ]
+  },
+  {
+    "name": "littleneck Clams",
+    "level": 3,
+    "synonyms": [
+      "Clams (littleneck)",
+      "Clams",
+      "littleneck",
+      "littlenecks",
+      "littleneck Clams"
+    ]
+  },
+  {
+    "name": "Locust Bean Gum, Carob Gum",
+    "level": 3,
+    "synonyms": [
+      "Locust Bean Gum, Carob Gum",
+      "Locust Bean Gum, Carob Gums",
+      "nan",
+      "nans",
+      "locust bean gum carob gum",
+      "locust bean gum carob gums",
+      "locust bean gum",
+      "locust bean gums",
+      "carob gum",
+      "carob gums",
+      "carob bean gum",
+      "carob bean gums",
+      "e410"
+    ]
+  },
+  {
+    "name": "Mahi-mahi",
+    "level": 3,
+    "synonyms": [
+      "Mahi-mahi",
+      "nan",
+      "nans",
+      "mahi mahi",
+      "mahi mahis",
+      "dolphinfish",
+      "dolphinfishs"
+    ]
+  },
+  {
+    "name": "Mangosteen",
+    "level": 3,
+    "synonyms": [
+      "Mangosteen",
+      "Mangosteens",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "mascarpone Cheese",
+    "level": 3,
+    "synonyms": [
+      "Cheese (mascarpone)",
+      "Cheese",
+      "Cheeses",
+      "mascarpone",
+      "mascarpones",
+      "mascarpone Cheese",
+      "mascarpone Cheeses",
+      "mascarpone cheese",
+      "mascarpone cheeses"
+    ]
+  },
+  {
+    "name": "Methylcellulose",
+    "level": 3,
+    "synonyms": [
+      "Methylcellulose",
+      "Methylcelluloses",
+      "nan",
+      "nans",
+      "methylcellulose",
+      "methylcelluloses",
+      "methyl cellulose",
+      "methyl celluloses",
+      "e461"
+    ]
+  },
+  {
+    "name": "Miso",
+    "level": 3,
+    "synonyms": [
+      "Miso",
+      "Misos",
+      "nan",
+      "nans",
+      "miso",
+      "misos",
+      "soybean paste",
+      "soybean pastes",
+      "miso paste",
+      "miso pastes"
+    ]
+  },
+  {
+    "name": "Monostarch Phosphate",
+    "level": 3,
+    "synonyms": [
+      "Monostarch Phosphate",
+      "Monostarch Phosphates",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "nile Tilapia",
+    "level": 3,
+    "synonyms": [
+      "Tilapia (nile)",
+      "Tilapia",
+      "Tilapias",
+      "nile",
+      "niles",
+      "nile Tilapia",
+      "nile Tilapias",
+      "tilapia nile",
+      "tilapia niles",
+      "tilapia",
+      "tilapias",
+      "nile tilapia",
+      "nile tilapias"
+    ]
+  },
+  {
+    "name": "Oyster",
+    "level": 3,
+    "synonyms": [
+      "Oyster",
+      "Oysters",
+      "nan",
+      "nans",
+      "oyster",
+      "oysters"
+    ]
+  },
+  {
+    "name": "pacific Sardines",
+    "level": 3,
+    "synonyms": [
+      "Sardines (pacific)",
+      "Sardines",
+      "pacific",
+      "pacifics",
+      "pacific Sardines",
+      "sardines pacific",
+      "sardines pacifics",
+      "sardine",
+      "sardines",
+      "pacific sardines"
+    ]
+  },
+  {
+    "name": "Paprika",
+    "level": 3,
+    "synonyms": [
+      "Paprika",
+      "Paprikas",
+      "nan",
+      "nans",
+      "paprika",
+      "paprikas",
+      "paprika extract",
+      "paprika extracts",
+      "capsicum annuum",
+      "capsicum annuums"
+    ]
+  },
+  {
+    "name": "Peanut Oil",
+    "level": 3,
+    "synonyms": [
+      "Peanut Oil",
+      "Peanut Oils",
+      "nan",
+      "nans",
+      "peanut oil",
+      "peanut oils",
+      "groundnut oil",
+      "groundnut oils",
+      "arachis oil",
+      "arachis oils"
+    ]
+  },
+  {
+    "name": "pink himalayan Salt",
+    "level": 3,
+    "synonyms": [
+      "Salt (pink himalayan)",
+      "Salt",
+      "Salts",
+      "pink himalayan",
+      "pink himalayans",
+      "pink himalayan Salt",
+      "pink himalayan Salts",
+      "pink himalayan salt",
+      "pink himalayan salts",
+      "himalayan pink salt",
+      "himalayan pink salts"
+    ]
+  },
+  {
+    "name": "Pistachio",
+    "level": 3,
+    "synonyms": [
+      "Pistachio",
+      "Pistachios",
+      "nan",
+      "nans",
+      "pistachio",
+      "pistachios"
+    ]
+  },
+  {
+    "name": "Potassium Chloride",
+    "level": 3,
+    "synonyms": [
+      "Potassium Chloride",
+      "Potassium Chlorides",
+      "nan",
+      "nans",
+      "potassium chloride",
+      "potassium chlorides",
+      "kcl",
+      "kcls",
+      "potassium salt",
+      "potassium salts"
+    ]
+  },
+  {
+    "name": "raw Bok Choy",
+    "level": 3,
+    "synonyms": [
+      "Bok Choy (raw)",
+      "Bok Choy",
+      "Bok Choys",
+      "raw",
+      "raws",
+      "raw Bok Choy",
+      "raw Bok Choys"
+    ]
+  },
+  {
+    "name": "raw Broccoli",
+    "level": 3,
+    "synonyms": [
+      "Broccoli (raw)",
+      "Broccoli",
+      "Broccolis",
+      "raw",
+      "raws",
+      "raw Broccoli",
+      "raw Broccolis"
+    ]
+  },
+  {
+    "name": "raw romaine Lettuce",
+    "level": 3,
+    "synonyms": [
+      "Lettuce (raw romaine)",
+      "Lettuce",
+      "Lettuces",
+      "raw romaine",
+      "raw romaines",
+      "raw romaine Lettuce",
+      "raw romaine Lettuces"
+    ]
+  },
+  {
+    "name": "red Curry",
+    "level": 3,
+    "synonyms": [
+      "Curry (red)",
+      "Curry",
+      "Currys",
+      "red",
+      "reds",
+      "red Curry",
+      "red Currys"
+    ]
+  },
+  {
+    "name": "red/cayenne Pepper",
+    "level": 3,
+    "synonyms": [
+      "Pepper (red/cayenne)",
+      "Pepper",
+      "Peppers",
+      "red/cayenne",
+      "red/cayenne Pepper",
+      "red/cayenne Peppers",
+      "pepper red cayenne",
+      "pepper red cayennes",
+      "cayenne",
+      "cayennes",
+      "cayenne pepper",
+      "cayenne peppers"
+    ]
+  },
+  {
+    "name": "Rye",
+    "level": 3,
+    "synonyms": [
+      "Rye",
+      "Ryes",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Sago",
+    "level": 3,
+    "synonyms": [
+      "Sago",
+      "Sagos",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "salted Butter",
+    "level": 3,
+    "synonyms": [
+      "Butter (salted)",
+      "Butter",
+      "Butters",
+      "salted",
+      "salteds",
+      "salted Butter",
+      "salted Butters"
+    ]
+  },
+  {
+    "name": "scallions Onions",
+    "level": 3,
+    "synonyms": [
+      "Onions (scallions)",
+      "Onions",
+      "scallions",
+      "scallions Onions"
+    ]
+  },
+  {
+    "name": "semolina Wheat",
+    "level": 3,
+    "synonyms": [
+      "Wheat (semolina)",
+      "Wheat",
+      "Wheats",
+      "semolina",
+      "semolinas",
+      "semolina Wheat",
+      "semolina Wheats",
+      "semolina wheat",
+      "semolina wheats",
+      "wheat semolina",
+      "wheat semolinas",
+      "durum semolina",
+      "durum semolinas"
+    ]
+  },
+  {
+    "name": "snow Crab",
+    "level": 3,
+    "synonyms": [
+      "Crab (snow)",
+      "Crab",
+      "Crabs",
+      "snow",
+      "snows",
+      "snow Crab",
+      "snow Crabs"
+    ]
+  },
+  {
+    "name": "Sodium Cyclamate",
+    "level": 3,
+    "synonyms": [
+      "Sodium Cyclamate",
+      "Sodium Cyclamates",
+      "nan",
+      "nans",
+      "sodium cyclamate",
+      "sodium cyclamates",
+      "cyclamate",
+      "cyclamates",
+      "e952"
+    ]
+  },
+  {
+    "name": "Soybean Flour",
+    "level": 3,
+    "synonyms": [
+      "Soybean Flour",
+      "Soybean Flours",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "spaghetti Squash",
+    "level": 3,
+    "synonyms": [
+      "Squash (spaghetti)",
+      "Squash",
+      "Squashs",
+      "spaghetti",
+      "spaghettis",
+      "spaghetti Squash",
+      "spaghetti Squashs"
+    ]
+  },
+  {
+    "name": "spanish Mackerel",
+    "level": 3,
+    "synonyms": [
+      "Mackerel (spanish)",
+      "Mackerel",
+      "Mackerels",
+      "spanish",
+      "spanishs",
+      "spanish Mackerel",
+      "spanish Mackerels",
+      "mackerel spanish",
+      "mackerel spanishs",
+      "spanish mackerel",
+      "spanish mackerels"
+    ]
+  },
+  {
+    "name": "Stearic Acid",
+    "level": 3,
+    "synonyms": [
+      "Stearic Acid",
+      "Stearic Acids",
+      "nan",
+      "nans",
+      "stearic acid",
+      "stearic acids",
+      "octadecanoic acid",
+      "octadecanoic acids",
+      "e570"
+    ]
+  },
+  {
+    "name": "steelhead Trout",
+    "level": 3,
+    "synonyms": [
+      "Trout (steelhead)",
+      "Trout",
+      "Trouts",
+      "steelhead",
+      "steelheads",
+      "steelhead Trout",
+      "steelhead Trouts",
+      "trout steelhead",
+      "trout steelheads",
+      "steelhead trout",
+      "steelhead trouts"
+    ]
+  },
+  {
+    "name": "stilton Cheese",
+    "level": 3,
+    "synonyms": [
+      "Cheese (stilton)",
+      "Cheese",
+      "Cheeses",
+      "stilton",
+      "stiltons",
+      "stilton Cheese",
+      "stilton Cheeses",
+      "stilton cheese",
+      "stilton cheeses"
+    ]
+  },
+  {
+    "name": "Sunflower Seed",
+    "level": 3,
+    "synonyms": [
+      "Sunflower Seed",
+      "Sunflower Seeds",
+      "nan",
+      "nans",
+      "sunflower seed",
+      "sunflower seeds"
+    ]
+  },
+  {
+    "name": "swiss Cheese",
+    "level": 3,
+    "synonyms": [
+      "Cheese (swiss)",
+      "Cheese",
+      "Cheeses",
+      "swiss",
+      "swiss Cheese",
+      "swiss Cheeses"
+    ]
+  },
+  {
+    "name": "Tamari",
+    "level": 3,
+    "synonyms": [
+      "Tamari",
+      "Tamaris",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "tangerines Oranges",
+    "level": 3,
+    "synonyms": [
+      "Oranges (tangerines)",
+      "Oranges",
+      "tangerines",
+      "tangerines Oranges"
+    ]
+  },
+  {
+    "name": "Tara Meal",
+    "level": 3,
+    "synonyms": [
+      "Tara Meal",
+      "Tara Meals",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Tempeh",
+    "level": 3,
+    "synonyms": [
+      "Tempeh",
+      "Tempehs",
+      "nan",
+      "nans",
+      "tempeh",
+      "tempehs",
+      "fermented soybean cake",
+      "fermented soybean cakes",
+      "tempe",
+      "tempes"
+    ]
+  },
+  {
+    "name": "Tomatillo",
+    "level": 3,
+    "synonyms": [
+      "Tomatillo",
+      "Tomatillos",
+      "nan",
+      "nans",
+      "tomatillo",
+      "tomatillos",
+      "physalis philadelphica",
+      "physalis philadelphicas"
+    ]
+  },
+  {
+    "name": "Triticale",
+    "level": 3,
+    "synonyms": [
+      "Triticale",
+      "Triticales",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Turmeric",
+    "level": 3,
+    "synonyms": [
+      "Turmeric",
+      "Turmerics",
+      "nan",
+      "nans",
+      "turmeric",
+      "turmerics",
+      "curcuma longa",
+      "curcuma longas",
+      "curcumin",
+      "curcumins"
+    ]
+  },
+  {
+    "name": "unsalted Butter",
+    "level": 3,
+    "synonyms": [
+      "Butter (unsalted)",
+      "Butter",
+      "Butters",
+      "unsalted",
+      "unsalteds",
+      "unsalted Butter",
+      "unsalted Butters"
+    ]
+  },
+  {
+    "name": "Wasabi",
+    "level": 3,
+    "synonyms": [
+      "Wasabi",
+      "Wasabis",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Watercress",
+    "level": 3,
+    "synonyms": [
+      "Watercress",
+      "nan",
+      "nans",
+      "watercress",
+      "nasturtium officinale",
+      "nasturtium officinales"
+    ]
+  },
+  {
+    "name": "white Grapefruit",
+    "level": 3,
+    "synonyms": [
+      "Grapefruit (white)",
+      "Grapefruit",
+      "Grapefruits",
+      "white",
+      "whites",
+      "white Grapefruit",
+      "white Grapefruits"
+    ]
+  },
+  {
+    "name": "white Rice",
+    "level": 3,
+    "synonyms": [
+      "Rice (white)",
+      "Rice",
+      "Rices",
+      "white",
+      "whites",
+      "white Rice",
+      "white Rices",
+      "rice white",
+      "rice whites",
+      "white rice",
+      "white rices"
+    ]
+  },
+  {
+    "name": "Xylitol",
+    "level": 3,
+    "synonyms": [
+      "Xylitol",
+      "Xylitols",
+      "nan",
+      "nans",
+      "xylitol",
+      "xylitols",
+      "e967"
+    ]
+  },
+  {
+    "name": "yellowtail Snapper",
+    "level": 3,
+    "synonyms": [
+      "Snapper (yellowtail)",
+      "Snapper",
+      "Snappers",
+      "yellowtail",
+      "yellowtails",
+      "yellowtail Snapper",
+      "yellowtail Snappers",
+      "yellowtail snapper",
+      "yellowtail snappers",
+      "snapper",
+      "snappers"
+    ]
+  },
+  {
+    "name": "Zein",
+    "level": 3,
+    "synonyms": [
+      "Zein",
+      "Zeins",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Acetylised Starch",
+    "level": 2,
+    "synonyms": [
+      "Acetylised Starch",
+      "Acetylised Starchs",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "ahi Tuna",
+    "level": 2,
+    "synonyms": [
+      "Tuna (ahi)",
+      "Tuna",
+      "Tunas",
+      "ahi",
+      "ahis",
+      "ahi Tuna",
+      "ahi Tunas"
+    ]
+  },
+  {
+    "name": "Apricots",
+    "level": 2,
+    "synonyms": [
+      "Apricots",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Bay Leaf",
+    "level": 2,
+    "synonyms": [
+      "Bay Leaf",
+      "Bay Leafs",
+      "nan",
+      "nans",
+      "bay leaf",
+      "bay leafs",
+      "bay leaves",
+      "laurel leaf",
+      "laurel leafs",
+      "laurus nobilis"
+    ]
+  },
+  {
+    "name": "Beef Tallow",
+    "level": 2,
+    "synonyms": [
+      "Beef Tallow",
+      "Beef Tallows",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Bilberries",
+    "level": 2,
+    "synonyms": [
+      "Bilberries",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "black Olives",
+    "level": 2,
+    "synonyms": [
+      "Olives (black)",
+      "Olives",
+      "black",
+      "blacks",
+      "black Olives",
+      "olives black",
+      "olives blacks",
+      "black olives"
+    ]
+  },
+  {
+    "name": "Brazil",
+    "level": 2,
+    "synonyms": [
+      "Brazil",
+      "Brazils",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "brick Cheese",
+    "level": 2,
+    "synonyms": [
+      "Cheese (brick)",
+      "Cheese",
+      "Cheeses",
+      "brick",
+      "bricks",
+      "brick Cheese",
+      "brick Cheeses",
+      "brick cheese",
+      "brick cheeses"
+    ]
+  },
+  {
+    "name": "camembert Cheese",
+    "level": 2,
+    "synonyms": [
+      "Cheese (camembert)",
+      "Cheese",
+      "Cheeses",
+      "camembert",
+      "camemberts",
+      "camembert Cheese",
+      "camembert Cheeses",
+      "camembert cheese",
+      "camembert cheeses"
+    ]
+  },
+  {
+    "name": "cherrystone Clams",
+    "level": 2,
+    "synonyms": [
+      "Clams (cherrystone)",
+      "Clams",
+      "cherrystone",
+      "cherrystones",
+      "cherrystone Clams"
+    ]
+  },
+  {
+    "name": "Chickpea",
+    "level": 2,
+    "synonyms": [
+      "Chickpea",
+      "Chickpeas",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "cornu aspersum Snail",
+    "level": 2,
+    "synonyms": [
+      "Snail (cornu aspersum)",
+      "Snail",
+      "Snails",
+      "cornu aspersum",
+      "cornu aspersums",
+      "cornu aspersum Snail",
+      "cornu aspersum Snails"
+    ]
+  },
+  {
+    "name": "cottage Cheese",
+    "level": 2,
+    "synonyms": [
+      "Cheese (cottage)",
+      "Cheese",
+      "Cheeses",
+      "cottage",
+      "cottages",
+      "cottage Cheese",
+      "cottage Cheeses",
+      "cottage cheese",
+      "cottage cheeses",
+      "paneer cottage cheese",
+      "paneer cottage cheeses",
+      "curd cheese",
+      "curd cheeses"
+    ]
+  },
+  {
+    "name": "Cottonseed Oil",
+    "level": 2,
+    "synonyms": [
+      "Cottonseed Oil",
+      "Cottonseed Oils",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Cremini",
+    "level": 2,
+    "synonyms": [
+      "Cremini",
+      "Creminis",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Disodium Ionisate",
+    "level": 2,
+    "synonyms": [
+      "Disodium Ionisate",
+      "Disodium Ionisates",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "duck Egg Yolk",
+    "level": 2,
+    "synonyms": [
+      "Egg Yolk (duck)",
+      "Egg Yolk",
+      "Egg Yolks",
+      "duck",
+      "ducks",
+      "duck Egg Yolk",
+      "duck Egg Yolks"
+    ]
+  },
+  {
+    "name": "eggshell Collagen",
+    "level": 2,
+    "synonyms": [
+      "Collagen (eggshell)",
+      "Collagen",
+      "Collagens",
+      "eggshell",
+      "eggshells",
+      "eggshell Collagen",
+      "eggshell Collagens"
+    ]
+  },
+  {
+    "name": "european Lobster",
+    "level": 2,
+    "synonyms": [
+      "Lobster (european)",
+      "Lobster",
+      "Lobsters",
+      "european",
+      "europeans",
+      "european Lobster",
+      "european Lobsters"
+    ]
+  },
+  {
+    "name": "evaporated Milk",
+    "level": 2,
+    "synonyms": [
+      "Milk (evaporated)",
+      "Milk",
+      "Milks",
+      "evaporated",
+      "evaporateds",
+      "evaporated Milk",
+      "evaporated Milks"
+    ]
+  },
+  {
+    "name": "Fenugreek",
+    "level": 2,
+    "synonyms": [
+      "Fenugreek",
+      "Fenugreeks",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "fuji Apple",
+    "level": 2,
+    "synonyms": [
+      "Apple (fuji)",
+      "Apple",
+      "Apples",
+      "fuji",
+      "fujis",
+      "fuji Apple",
+      "fuji Apples"
+    ]
+  },
+  {
+    "name": "Gelatin",
+    "level": 2,
+    "synonyms": [
+      "Gelatin",
+      "Gelatins",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Glucono-o-lactone",
+    "level": 2,
+    "synonyms": [
+      "Glucono-o-lactone",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "goat Cheese",
+    "level": 2,
+    "synonyms": [
+      "Cheese (goat)",
+      "Cheese",
+      "Cheeses",
+      "goat",
+      "goats",
+      "goat Cheese",
+      "goat Cheeses"
+    ]
+  },
+  {
+    "name": "golden delicious Apple",
+    "level": 2,
+    "synonyms": [
+      "Apple (golden delicious)",
+      "Apple",
+      "Apples",
+      "golden delicious",
+      "golden delicious Apple",
+      "golden delicious Apples"
+    ]
+  },
+  {
+    "name": "Green-lipped Mussels",
+    "level": 2,
+    "synonyms": [
+      "Green-lipped Mussels",
+      "nan",
+      "nans",
+      "green lipped mussels",
+      "green-lipped mussel",
+      "green-lipped mussels",
+      "perna canaliculus"
+    ]
+  },
+  {
+    "name": "ground Veal",
+    "level": 2,
+    "synonyms": [
+      "Veal (ground)",
+      "Veal",
+      "Veals",
+      "ground",
+      "grounds",
+      "ground Veal",
+      "ground Veals"
+    ]
+  },
+  {
+    "name": "Guava",
+    "level": 2,
+    "synonyms": [
+      "Guava",
+      "Guavas",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "halloumi Cheese",
+    "level": 2,
+    "synonyms": [
+      "Cheese (halloumi)",
+      "Cheese",
+      "Cheeses",
+      "halloumi",
+      "halloumis",
+      "halloumi Cheese",
+      "halloumi Cheeses",
+      "halloumi cheese",
+      "halloumi cheeses"
+    ]
+  },
+  {
+    "name": "Insinic Acid",
+    "level": 2,
+    "synonyms": [
+      "Insinic Acid",
+      "Insinic Acids",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "isolate Whey Protein",
+    "level": 2,
+    "synonyms": [
+      "Whey Protein (isolate)",
+      "Whey Protein",
+      "Whey Proteins",
+      "isolate",
+      "isolates",
+      "isolate Whey Protein",
+      "isolate Whey Proteins"
+    ]
+  },
+  {
+    "name": "Isomalt",
+    "level": 2,
+    "synonyms": [
+      "Isomalt",
+      "Isomalts",
+      "nan",
+      "nans",
+      "isomalt",
+      "isomalts",
+      "e953"
+    ]
+  },
+  {
+    "name": "jarlsberg Cheese",
+    "level": 2,
+    "synonyms": [
+      "Cheese (jarlsberg)",
+      "Cheese",
+      "Cheeses",
+      "jarlsberg",
+      "jarlsbergs",
+      "jarlsberg Cheese",
+      "jarlsberg Cheeses",
+      "jarlsberg cheese",
+      "jarlsberg cheeses"
+    ]
+  },
+  {
+    "name": "jazz Apple",
+    "level": 2,
+    "synonyms": [
+      "Apple (jazz)",
+      "Apple",
+      "Apples",
+      "jazz",
+      "jazzs",
+      "jazz Apple",
+      "jazz Apples"
+    ]
+  },
+  {
+    "name": "Jellyfish",
+    "level": 2,
+    "synonyms": [
+      "Jellyfish",
+      "Jellyfishs",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Kimchi",
+    "level": 2,
+    "synonyms": [
+      "Kimchi",
+      "Kimchis",
+      "nan",
+      "nans",
+      "kimchi",
+      "kimchis",
+      "kimchee",
+      "kimchees"
+    ]
+  },
+  {
+    "name": "king Crab",
+    "level": 2,
+    "synonyms": [
+      "Crab (king)",
+      "Crab",
+      "Crabs",
+      "king",
+      "kings",
+      "king Crab",
+      "king Crabs"
+    ]
+  },
+  {
+    "name": "lane Snapper",
+    "level": 2,
+    "synonyms": [
+      "Snapper (lane)",
+      "Snapper",
+      "Snappers",
+      "lane",
+      "lanes",
+      "lane Snapper",
+      "lane Snappers",
+      "lane snapper",
+      "lane snappers",
+      "snapper",
+      "snappers"
+    ]
+  },
+  {
+    "name": "largemouth Bass",
+    "level": 2,
+    "synonyms": [
+      "Bass (largemouth)",
+      "Bass",
+      "largemouth",
+      "largemouths",
+      "largemouth Bass"
+    ]
+  },
+  {
+    "name": "Lemons",
+    "level": 2,
+    "synonyms": [
+      "Lemons",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Lion's Mane",
+    "level": 2,
+    "synonyms": [
+      "Lion's Mane",
+      "Lion's Manes",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Mannitol",
+    "level": 2,
+    "synonyms": [
+      "Mannitol",
+      "Mannitols",
+      "nan",
+      "nans",
+      "mannitol",
+      "mannitols",
+      "e421"
+    ]
+  },
+  {
+    "name": "Marula",
+    "level": 2,
+    "synonyms": [
+      "Marula",
+      "Marulas",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Moringa",
+    "level": 2,
+    "synonyms": [
+      "Moringa",
+      "Moringas",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "MSG",
+    "level": 2,
+    "synonyms": [
+      "MSG",
+      "MSGs",
+      "nan",
+      "nans",
+      "msg",
+      "msgs",
+      "monosodium glutamate",
+      "monosodium glutamates",
+      "e621"
+    ]
+  },
+  {
+    "name": "Nutritional Yeast",
+    "level": 2,
+    "synonyms": [
+      "Nutritional Yeast",
+      "Nutritional Yeasts",
+      "nan",
+      "nans",
+      "nutritional yeast",
+      "nutritional yeasts",
+      "nooch",
+      "noochs",
+      "inactive yeast",
+      "inactive yeasts"
+    ]
+  },
+  {
+    "name": "Ong Choy",
+    "level": 2,
+    "synonyms": [
+      "Ong Choy",
+      "Ong Choys",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Oregano",
+    "level": 2,
+    "synonyms": [
+      "Oregano",
+      "Oreganos",
+      "nan",
+      "nans",
+      "oregano",
+      "oreganos",
+      "origanum vulgare",
+      "origanum vulgares"
+    ]
+  },
+  {
+    "name": "pacific Cod",
+    "level": 2,
+    "synonyms": [
+      "Cod (pacific)",
+      "Cod",
+      "Cods",
+      "pacific",
+      "pacifics",
+      "pacific Cod",
+      "pacific Cods"
+    ]
+  },
+  {
+    "name": "pacific Haddock",
+    "level": 2,
+    "synonyms": [
+      "Haddock (pacific)",
+      "Haddock",
+      "Haddocks",
+      "pacific",
+      "pacifics",
+      "pacific Haddock",
+      "pacific Haddocks"
+    ]
+  },
+  {
+    "name": "Peppermint",
+    "level": 2,
+    "synonyms": [
+      "Peppermint",
+      "Peppermints",
+      "nan",
+      "nans",
+      "peppermint",
+      "peppermints",
+      "mentha piperita",
+      "mentha piperitas",
+      "peppermint leaf",
+      "peppermint leafs"
+    ]
+  },
+  {
+    "name": "Plums",
+    "level": 2,
+    "synonyms": [
+      "Plums",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Poblano Pepper",
+    "level": 2,
+    "synonyms": [
+      "Poblano Pepper",
+      "Poblano Peppers",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Polydextrose",
+    "level": 2,
+    "synonyms": [
+      "Polydextrose",
+      "Polydextroses",
+      "nan",
+      "nans",
+      "polydextrose",
+      "polydextroses",
+      "e1200"
+    ]
+  },
+  {
+    "name": "porcine Collagen",
+    "level": 2,
+    "synonyms": [
+      "Collagen (porcine)",
+      "Collagen",
+      "Collagens",
+      "porcine",
+      "porcines",
+      "porcine Collagen",
+      "porcine Collagens"
+    ]
+  },
+  {
+    "name": "Pork Fat Lard",
+    "level": 2,
+    "synonyms": [
+      "Lard (Pork Fat)",
+      "Lard",
+      "Lards",
+      "Pork Fat",
+      "Pork Fats",
+      "Pork Fat Lard",
+      "Pork Fat Lards"
+    ]
+  },
+  {
+    "name": "port salut Cheese",
+    "level": 2,
+    "synonyms": [
+      "Cheese (port salut)",
+      "Cheese",
+      "Cheeses",
+      "port salut",
+      "port saluts",
+      "port salut Cheese",
+      "port salut Cheeses"
+    ]
+  },
+  {
+    "name": "Portabella",
+    "level": 2,
+    "synonyms": [
+      "Portabella",
+      "Portabellas",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Potassium Alginate",
+    "level": 2,
+    "synonyms": [
+      "Potassium Alginate",
+      "Potassium Alginates",
+      "nan",
+      "nans",
+      "potassium alginate",
+      "potassium alginates",
+      "e402",
+      "alginate",
+      "alginates"
+    ]
+  },
+  {
+    "name": "provolone Cheese",
+    "level": 2,
+    "synonyms": [
+      "Cheese (provolone)",
+      "Cheese",
+      "Cheeses",
+      "provolone",
+      "provolones",
+      "provolone Cheese",
+      "provolone Cheeses",
+      "provolone cheese",
+      "provolone cheeses"
+    ]
+  },
+  {
+    "name": "purple Garlic",
+    "level": 2,
+    "synonyms": [
+      "Garlic (purple)",
+      "Garlic",
+      "Garlics",
+      "purple",
+      "purples",
+      "purple Garlic",
+      "purple Garlics"
+    ]
+  },
+  {
+    "name": "Quail",
+    "level": 2,
+    "synonyms": [
+      "Quail",
+      "Quails",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "rainbow Trout",
+    "level": 2,
+    "synonyms": [
+      "Trout (rainbow)",
+      "Trout",
+      "Trouts",
+      "rainbow",
+      "rainbows",
+      "rainbow Trout",
+      "rainbow Trouts"
+    ]
+  },
+  {
+    "name": "raw Cucumber",
+    "level": 2,
+    "synonyms": [
+      "Cucumber (raw)",
+      "Cucumber",
+      "Cucumbers",
+      "raw",
+      "raws",
+      "raw Cucumber",
+      "raw Cucumbers"
+    ]
+  },
+  {
+    "name": "raw Rainbow Chard",
+    "level": 2,
+    "synonyms": [
+      "Rainbow Chard (raw)",
+      "Rainbow Chard",
+      "Rainbow Chards",
+      "raw",
+      "raws",
+      "raw Rainbow Chard",
+      "raw Rainbow Chards"
+    ]
+  },
+  {
+    "name": "Red Currants",
+    "level": 2,
+    "synonyms": [
+      "Red Currants",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "red Grapes",
+    "level": 2,
+    "synonyms": [
+      "Grapes (red)",
+      "Grapes",
+      "red",
+      "reds",
+      "red Grapes"
+    ]
+  },
+  {
+    "name": "romano Cheese",
+    "level": 2,
+    "synonyms": [
+      "Cheese (romano)",
+      "Cheese",
+      "Cheeses",
+      "romano",
+      "romanos",
+      "romano Cheese",
+      "romano Cheeses",
+      "romano cheese",
+      "romano cheeses"
+    ]
+  },
+  {
+    "name": "Rosemary",
+    "level": 2,
+    "synonyms": [
+      "Rosemary",
+      "Rosemarys",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "Sesame seed",
+    "level": 2,
+    "synonyms": [
+      "Sesame seed",
+      "Sesame seeds",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "smallmouth Bass",
+    "level": 2,
+    "synonyms": [
+      "Bass (smallmouth)",
+      "Bass",
+      "smallmouth",
+      "smallmouths",
+      "smallmouth Bass"
+    ]
+  },
+  {
+    "name": "soy Yogurt",
+    "level": 2,
+    "synonyms": [
+      "Yogurt (soy)",
+      "Yogurt",
+      "Yogurts",
+      "soy",
+      "soys",
+      "soy Yogurt",
+      "soy Yogurts"
+    ]
+  },
+  {
+    "name": "Sweet Chestnuts",
+    "level": 2,
+    "synonyms": [
+      "Sweet Chestnuts",
+      "nan",
+      "nans"
+    ]
+  },
+  {
+    "name": "turkey Liver",
+    "level": 2,
+    "synonyms": [
+      "Liver (turkey)",
+      "Liver",
+      "Livers",
+      "turkey",
+      "turkeys",
+      "turkey Liver",
+      "turkey Livers"
+    ]
+  },
+  {
+    "name": "white Onions",
+    "level": 2,
+    "synonyms": [
+      "Onions (white)",
+      "Onions",
+      "white",
+      "whites",
+      "white Onions"
+    ]
+  },
+  {
+    "name": "Yeast Extract",
+    "level": 2,
+    "synonyms": [
+      "Yeast Extract",
+      "Yeast Extracts",
+      "nan",
+      "nans",
+      "yeast extract",
+      "yeast extracts",
+      "autolyzed yeast extract",
+      "autolyzed yeast extracts",
+      "yeast extract paste",
+      "yeast extract pastes",
+      "yeast extract powder",
+      "yeast extract powders"
+    ]
+  },
+  {
+    "name": "yellow Onions",
+    "level": 2,
+    "synonyms": [
+      "Onions (yellow)",
+      "Onions",
+      "yellow",
+      "yellows",
+      "yellow Onions"
+    ]
+  },
+  {
+    "name": "zucchini Squash",
+    "level": 2,
+    "synonyms": [
+      "Squash (zucchini)",
+      "Squash",
+      "Squashs",
+      "zucchini",
+      "zucchinis",
+      "zucchini Squash",
+      "zucchini Squashs"
+    ]
+  }
+]
