@@ -26,7 +26,7 @@
   <!-- ZXing UMD bundle (Option A): load BEFORE your app script -->
   <script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js"
           crossorigin="anonymous"></script>
-  <!-- (Optional fallback CDN if you want extra redundancy)
+  <!-- (Optional extra redundancy)
   <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"
           crossorigin="anonymous"></script>
   -->
@@ -75,7 +75,44 @@
     </section>
   </div>
 
+  <!-- Self-test & safety net: show iOS "Start Camera" if main script hasn't done it yet -->
+  <script>
+    (function () {
+      const statusEl = document.getElementById('camera-status');
+      const tapPrompt = document.getElementById('tapPrompt');
+      const tapStart  = document.getElementById('tapStart');
+
+      // Prove inline JS ran
+      if (statusEl) statusEl.textContent = 'Initializing… (inline OK)';
+
+      // If the main app script hasn't shown the tap prompt quickly, show it here
+      setTimeout(() => {
+        if (!tapPrompt || !tapStart) return;
+
+        if (tapPrompt.style.display !== 'flex') {
+          tapPrompt.style.display = 'flex';
+        }
+
+        tapStart.onclick = async () => {
+          if (statusEl) statusEl.textContent = 'Requesting camera… (fallback)';
+          try {
+            if (!navigator.mediaDevices?.getUserMedia) {
+              statusEl.textContent = 'getUserMedia() not supported in this browser.';
+              return;
+            }
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            statusEl.textContent = 'Camera permission GRANTED (fallback). Closing test stream…';
+            stream.getTracks().forEach(t => t.stop());
+          } catch (e) {
+            // Common errors: NotAllowedError (denied), SecurityError (not HTTPS/localhost)
+            statusEl.textContent = 'Camera error (fallback): ' + (e.name || e.message);
+          }
+        };
+      }, 800);
+    })();
+  </script>
+
   <!-- Your application script (cache-busted to force updates) -->
-  <script src="script.js?v=20260117-optionA"></script>
+  <script src="script.js?v=20260118-fix"></script>
 </body>
 </html>
