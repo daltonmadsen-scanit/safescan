@@ -24,9 +24,11 @@
   </style>
 
   <!-- ZXing UMD bundle (Option A): load BEFORE your app script -->
-  https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js</script>
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js"
+          crossorigin="anonymous"></script>
   <!-- (Optional extra redundancy)
-  https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js</script>
+  <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"
+          crossorigin="anonymous"></script>
   -->
 </head>
 <body>
@@ -109,6 +111,6 @@
   </script>
 
   <!-- Your application script (cache-busted to force updates) -->
-  script.js?v=20260118-native-fix</script>
+  <script src="script.js?v=20260118-native-fix"></script>
 </body>
 </html>
