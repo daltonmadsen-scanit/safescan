@@ -3,6 +3,7 @@
    SafeScan – Auto camera + Auto scan + Auto populate (native + ZXing fallback)
    - Native-first; ZXing only if native not available
    - Robust dynamic ZXing loader WITH suppression if native is running
+   - Retail-format detection: auto-use ZXing on iPhone if EAN/UPC/Code128 unsupported
    - Token expansion from avoid list + always-on tokenized partial matching
    - Render warnings: ONLY the matched term(s) per level
    - Exposes window.startCameraApp() so index.html can start the REAL camera flow
@@ -32,6 +33,11 @@ const SCAN_INTERVAL_MS = 200;
 // Matching thresholds
 const TERM_TOKEN_MIN_LEN = 5;            // tokens extracted from avoid entries must be ≥ 5 chars
 const PARTIAL_TOKEN_MIN_LEN = 5;         // partial includes() allowed for terms ≥ 5 chars
+
+// Retail formats we need for grocery/UPC/EAN scanning
+const RETAIL_FORMATS = new Set([
+  'ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf','codabar'
+]);
 
 /* -------- State -------- */
 let currentStream = null;
@@ -65,6 +71,17 @@ function setStatus(msg, isError = false) {
   }
 }
 
+/* Check whether native BarcodeDetector supports any retail formats */
+async function hasNativeRetailSupport() {
+  if (!('BarcodeDetector' in window)) return false;
+  try {
+    const supported = await BarcodeDetector.getSupportedFormats?.();
+    return Array.isArray(supported) && supported.some(fmt => RETAIL_FORMATS.has(fmt));
+  } catch {
+    return false;
+  }
+}
+
 /* -------- Avoid list -------- */
 
 // strip diacritics: "açai" -> "acai"
@@ -86,18 +103,15 @@ function normalizeAvoid(raw) {
   const level = Number(raw?.level ?? raw?.severity ?? 0);
   const synonyms = Array.isArray(raw?.synonyms) ? raw.synonyms : [];
 
-  // base terms from name + synonyms
   const baseTerms = [name, ...synonyms]
     .filter(Boolean)
     .map(t => stripDiacritics(String(t).toLowerCase()));
 
-  // tokens from name and synonyms (captures "semolina")
   const expandedTokens = new Set();
   for (const s of [raw?.name, ...(synonyms ?? [])]) {
     tokenizeForTerms(s).forEach(tok => expandedTokens.add(tok));
   }
 
-  // unique final terms
   const termSet = new Set(baseTerms);
   expandedTokens.forEach(tok => termSet.add(tok));
   const terms = Array.from(termSet).filter(Boolean);
@@ -408,7 +422,9 @@ async function fetchAndDisplayProduct(barcode) {
 window.startCameraApp = async function () {
   try {
     await openStream(true);
-    const okNative = await startNativeScan();
+    // Prefer native if retail formats supported; otherwise go ZXing
+    const canNativeRetail = await hasNativeRetailSupport();
+    const okNative = canNativeRetail ? await startNativeScan() : false;
     if (!okNative) await startZXingScan();
   } catch (e) {
     setStatus(`Camera error: ${e?.name || e?.message || e}`, true);
@@ -435,16 +451,15 @@ async function boot() {
 
   // iOS requires user gesture to start camera
   if (isIOS && els.tapPrompt && els.tapStart) {
-    // Main iOS start button uses the REAL starter
     els.tapStart.onclick = async () => {
       try { await window.startCameraApp(); }
       catch (e) { setStatus(`Camera error: ${e?.name || e?.message || e}`, true); }
     };
   } else {
     try {
-      // On non-iOS, start immediately
       await openStream(true);
-      const okNative = await startNativeScan();
+      const canNativeRetail = await hasNativeRetailSupport();
+      const okNative = canNativeRetail ? await startNativeScan() : false;
       if (!okNative) await startZXingScan();
     } catch (e) {
       setStatus(`Camera error: ${e?.name || e?.message || e}`, true);
