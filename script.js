@@ -2,6 +2,7 @@
 /* ============================================================================
    SafeScan – Auto camera + Auto scan + Auto populate (native + ZXing fallback)
    Token expansion from avoid list + always-on tokenized partial matching
+   Render warnings: ONLY the matched term(s) per level
    ============================================================================ */
 
 /* -------- DOM -------- */
@@ -303,17 +304,35 @@ function matchIngredients(ingredients, avoid) {
   return { lvl2, lvl3 };
 }
 
-function renderWarnings(productName, matches) {
+/* -------- Render warnings: ONLY matched terms -------- */
+function renderWarnings(matches) {
   const { lvl2, lvl3 } = matches;
+
+  // Helper to set lists with JUST the matched term
   const setList = (ul, items, noneText) => {
     if (!ul) return;
     ul.innerHTML = '';
-    if (!items.length) { ul.innerHTML = `<li>${noneText}</li>`; return; }
-    items.forEach((m) => { const li = document.createElement('li'); li.textContent = `${productName} (${m.term})`; ul.appendChild(li); });
+    if (!items.length) {
+      ul.innerHTML = `<li>${noneText}</li>`;
+      return;
+    }
+    items.forEach(m => {
+      const li = document.createElement('li');
+      li.textContent = m.term;   // ONLY the matched term
+      ul.appendChild(li);
+    });
   };
+
+  // Set Level 3 and Level 2 warning lists
   setList(els.resLvl3, lvl3, 'None');
   setList(els.resLvl2, lvl2, 'None');
-  if (els.resOK) els.resOK.innerHTML = (!lvl2.length && !lvl3.length) ? '<li>No Level 2 or Level 3 ingredients detected</li>' : '<li>—</li>';
+
+  // OK section shows only if no matches anywhere
+  if (els.resOK) {
+    els.resOK.innerHTML = (!lvl2.length && !lvl3.length)
+      ? '<li>No flagged ingredients detected</li>'
+      : '<li>—</li>';
+  }
 }
 
 /* -------- Product fetch -------- */
@@ -332,13 +351,14 @@ async function fetchAndDisplayProduct(barcode) {
     const ingArr = Array.isArray(p.ingredients) ? p.ingredients : [];
     const ingredientsList = buildIngredientsList(ingTxt, ingArr);
 
+    // Keep showing product info & full ingredient string as before
     els.resName.textContent = name ?? '—';
     els.resBrand.textContent = brand ?? '—';
     els.resBarcode.textContent = barcode ?? '—';
     els.resIngredients.textContent = (ingredientsList.join(', ') || '—');
 
     const matches = matchIngredients(ingredientsList, avoidList);
-    renderWarnings(name, matches);
+    renderWarnings(matches);
     setStatus('Ingredients loaded. Matches evaluated.');
   } catch (e) {
     setStatus('Lookup failed. Try again.', true);
