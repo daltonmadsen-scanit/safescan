@@ -1,90 +1,143 @@
 
-{
-  "source": "excel_v1_w_concat_formatted.xlsx",
-  "generated_utc": "2026-01-16T03:19:35Z",
-  "levels": {
-    "INSIGNIFICANT": {
-      "items": [
-        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Aluminium Calcium Silicate", "normalized": "aluminium calcium silicate" },
-        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Calcium Silicate", "normalized": "calcium silicate" },
-        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Magnesium Oxide", "normalized": "magnesium oxide" },
-        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Magnesium Stearate", "normalized": "magnesium stearate" },
-        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Talc", "normalized": "talc" },
-        { "group": "FOOD INTOLERANCE", "category": "[Coating]", "item": "Bees Wax", "normalized": "bees wax" },
-        { "group": "FOOD INTOLERANCE", "category": "[Coating]", "item": "Candelilla Wax", "normalized": "candelilla wax" },
-        { "group": "FOOD INTOLERANCE", "category": "[Coating]", "item": "Carnauba Wax", "normalized": "carnauba wax" },
-        { "group": "FOOD INTOLERANCE", "category": "[Coating]", "item": "Ethylcellulose", "normalized": "ethylcellulose" },
-        { "group": "FOOD INTOLERANCE", "category": "[Coating]", "item": "Montanic Acid Ester", "normalized": "montanic acid ester" }
-        /* ... many more INSIGNIFICANT items continue ... */
-      ],
-      "match_keywords": [
-        "acesulfame k",
-        "acetylised di-starch phosphate",
-        "acorn",
-        "adzuki bean",
-        "agar",
-        "agave nectar"
-        /* ... continues with all distinct Item_Concat-derived keywords for INSIGNIFICANT ... */
-      ]
-    },
-    "LEVEL 1": {
-      "items": [
-        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Aluminium Potassium Silicate", "normalized": "aluminium potassium silicate" },
-        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Bentonite", "normalized": "bentonite" },
-        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Silica Gel", "normalized": "silica gel" }
-        /* ... remaining LEVEL 1 items ... */
-      ],
-      "match_keywords": [
-        "aluminium potassium silicate",
-        "bentonite",
-        "silica gel",
-        "edam cheese",
-        "manchego cheese"
-        /* ... all distinct Item_Concat-derived keywords for LEVEL 1 ... */
-      ]
-    },
-    "LEVEL 2": {
-      "items": [
-        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Glucono-o-lactone", "normalized": "glucono-o-lactone" },
-        { "group": "FOOD INTOLERANCE", "category": "[Dairy]", "item": "Cheese (brick)", "normalized": "cheese brick" }
-        /* ... remaining LEVEL 2 items ... */
-      ],
-      "match_keywords": [
-        "glucono-o-lactone",
-        "cheese brick",
-        "camembert cheese",
-        "cottage cheese"
-        /* ... all distinct Item_Concat-derived keywords for LEVEL 2 ... */
-      ]
-    },
-    "LEVEL 3": {
-      "items": [
-        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Aluminium Silicate", "normalized": "aluminium silicate" },
-        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Calcium Gluconate", "normalized": "calcium gluconate" },
-        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Stearic Acid", "normalized": "stearic acid" },
-        { "group": "FOOD INTOLERANCE", "category": "[Coating]", "item": "Zein", "normalized": "zein" },
-        { "group": "FOOD INTOLERANCE", "category": "[Dairy]", "item": "Cheese (almond)", "normalized": "cheese almond" },
-        { "group": "FOOD INTOLERANCE", "category": "[Dairy]", "item": "Cheese (asiago)", "normalized": "cheese asiago" }
-        /* ... all remaining LEVEL 3 items ... */
-      ],
-      "match_keywords": [
-        "aluminium silicate",
-        "calcium gluconate",
-        "stearic acid",
-        "zein",
-        "cheese almond",
-        "cheese asiago",
-        "cheese colby"
-        /* ... all distinct Item_Concat-derived keywords for LEVEL 3 ... */
-      ]
-    }
-  },
-  "combined": {
-    "items": [
-      /* all items across all levels (same objects as above, concatenated) */
-    ],
-    "match_keywords": [
-      /* union of all per-level match_keywords (de-duplicated), 659 entries total */
-    ]
-  }
+#!/usr/bin/env python3
+"""
+Rebuilds avoid_list.json (flat array) from excel_v1_w_concat_formatted.xlsx
+
+- Uses ONLY Item_Concat for names/synonyms (pre-normalized for matching).
+- Emits entries ONLY for LEVEL 2 and LEVEL 3 (your UI shows L2/L3 warnings).
+- Output format matches your existing frontend expectation:
+  [
+    { "name": "term", "level": 2|3, "synonyms": ["alt1", "alt2"] },
+    ...
+  ]
+"""
+
+import re
+import json
+from pathlib import Path
+import pandas as pd  # requires pandas + openpyxl available in your env
+
+# ----------------------------
+# Configuration
+# ----------------------------
+INPUT_XLSX = "excel_v1_w_concat_formatted.xlsx"   # change if your file has a different name
+OUTPUT_JSON = "avoid_list.json"                   # this will overwrite the repo file
+LEVEL_MAP = {"LEVEL 2": 2, "LEVEL 3": 3}          # export only L2 & L3
+
+# Optional conservative spelling aliases (expand if you like)
+ALIASES = {
+    "aluminium": "aluminum",
+    "sulphate": "sulfate",
+    "sulphites": "sulfites",
 }
+
+# ----------------------------
+# Text normalization (aligns with your frontend)
+# ----------------------------
+def normalize_for_match(s: str) -> str:
+    """
+    Make a term consistent with how your script normalizes ingredients:
+      - lowercase
+      - remove parenthetical content: "cheese (almond)" -> "cheese "
+      - replace slashes/hyphens/underscores with spaces
+      - collapse spaces
+      - trim non-alphanumeric at ends
+      - apply conservative word-level alias mapping (e.g., aluminium -> aluminum)
+    """
+    if s is None:
+        return ""
+    t = str(s).lower().strip()
+    t = re.sub(r"\([^)]*\)", "", t)                       # drop (...) content
+    t = t.replace("/", " ").replace("-", " ").replace("_", " ")
+    t = re.sub(r"\s+", " ", t).strip()                    # collapse spaces
+    t = re.sub(r"^[^a-z0-9]+|[^a-z0-9]+$", "", t)         # strip non-alnum edges
+    words = [ALIASES.get(w, w) for w in t.split()]
+    return " ".join(words).strip()
+
+def make_synonyms(item_concat_raw: str) -> set:
+    """
+    Build a small, safe synonym set from Item_Concat.
+    We avoid aggressive expansion to reduce false positives.
+    """
+    syns = set()
+    raw = str(item_concat_raw or "").strip()
+    if not raw:
+        return syns
+
+    # Original lowercase (for display parity)
+    syns.add(raw.lower())
+    # Remove parentheses content
+    syns.add(re.sub(r"\([^)]*\)", "", raw, flags=re.IGNORECASE).strip().lower())
+    # Replace common separators with spaces
+    syns.add(raw.replace("/", " ").replace("-", " ").replace("_", " ").lower())
+
+    # Normalize all variants to matching style
+    syns = {normalize_for_match(s) for s in syns}
+    syns.discard("")  # remove empties
+    return syns
+
+# ----------------------------
+# Build avoid list
+# ----------------------------
+def main():
+    src = Path(INPUT_XLSX)
+    if not src.exists():
+        raise FileNotFoundError(f"Excel not found: {src.resolve()}")
+
+    df = pd.read_excel(src, engine="openpyxl")
+
+    # Ensure required columns exist
+    required_cols = {"Level", "Item_Concat"}
+    missing = required_cols - set(df.columns)
+    if missing:
+        raise ValueError(f"Missing required columns in Excel: {missing}")
+
+    # Keep only L2/L3
+    df["__LEVEL__"] = df["Level"].astype(str).str.strip().str.upper()
+    level_df = df[df["__LEVEL__"].isin(LEVEL_MAP.keys())].copy()
+
+    # Aggregate by canonical 'name' (normalized Item_Concat)
+    # Map: name -> {"level": int (max), "synonyms": set()}
+    out_map = {}
+
+    for _, row in level_df.iterrows():
+        level_label = str(row["__LEVEL__"])
+        level_num = LEVEL_MAP[level_label]
+
+        raw_concat = row["Item_Concat"]
+        name = normalize_for_match(raw_concat)
+        if not name:
+            continue
+
+        syns = make_synonyms(raw_concat)
+
+        if name not in out_map:
+            out_map[name] = {"level": level_num, "synonyms": set()}
+        else:
+            # Keep the highest severity
+            out_map[name]["level"] = max(out_map[name]["level"], level_num)
+
+        # Merge synonyms, excluding the canonical name itself
+        out_map[name]["synonyms"].update(s for s in syns if s and s != name)
+
+    # Convert to flat list expected by your site
+    # Sort: level desc, then name asc (stable output)
+    result = [
+        {"name": name, "level": data["level"], "synonyms": sorted(data["synonyms"])}
+        for name, data in sorted(out_map.items(), key=lambda kv: (-kv[1]["level"], kv[0]))
+    ]
+
+    # Write JSON
+    out_path = Path(OUTPUT_JSON)
+    out_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # Console summary
+    print(f"Wrote {out_path} with {len(result)} entries.")
+    if result:
+        print("Breakdown — Level 3:",
+              sum(1 for x in result if x["level"] == 3),
+              "Level 2:",
+              sum(1 for x in result if x["level"] == 2))
+
+if __name__ == "__main__":
+    main()
