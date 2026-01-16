@@ -14,7 +14,7 @@
     #camera-status { color: #444; margin: .5rem 0 1rem; }
     #preview { width: 100%; max-width: 640px; background: #000; border-radius: 8px; }
     #tapPrompt { display:none; align-items:center; justify-content:center; margin: 1rem 0; }
-    #tapStart { padding:.6rem 1rem; border-radius:6px; border:1px solid #ccc; background:#f8f8f8; }
+    #tapStart { padding:.6rem 1rem; border-radius:6px; border:1px solid #ccc; background:#f8f8f8; cursor:pointer; }
     .section { margin-top: 1rem; }
     ul { margin: .5rem 0; padding-left: 1.2rem; }
     .grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
@@ -23,12 +23,10 @@
     }
   </style>
 
-  <!-- ZXing UMD bundle (Option A): load BEFORE your app script -->
-  <script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js"
-          crossorigin="anonymous"></script>
+  <!-- ZXing UMD bundle (Option A): load BEFORE your app script (safe on iPhone) -->
+  https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js"></script>
   <!-- (Optional extra redundancy)
-  <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"
-          crossorigin="anonymous"></script>
+  https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"></script>
   -->
 </head>
 <body>
@@ -111,6 +109,6 @@
   </script>
 
   <!-- Your application script (cache-busted to force updates) -->
-  <script src="script.js?v=20260118-native-fix"></script>
+  script.js?v=20260118-suppress-zxing"></script>
 </body>
 </html>
