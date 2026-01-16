@@ -6,7 +6,7 @@
   <title>SafeScan – Barcode & Ingredients</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-  <!-- Basic styles (optional, tweak as you like) -->
+  <!-- Basic styles -->
   <style>
     :root { color-scheme: light dark; }
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 1rem; }
@@ -23,10 +23,10 @@
     }
   </style>
 
-  <!-- ZXing UMD bundle (Option A): load BEFORE your app script (safe on iPhone) -->
-  https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js"></script>
-  <!-- (Optional extra redundancy)
-  https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"></script>
+  <!-- ZXing UMD bundle (Option A): load BEFORE your app script -->
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js" crossorigin="anonymous"></script>
+  <!-- (Optional redundancy)
+  <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js" crossorigin="anonymous"></script>
   -->
 </head>
 <body>
@@ -39,7 +39,7 @@
   <video id="preview" playsinline muted autoplay></video>
   <canvas id="snapshot" style="display:none;"></canvas>
 
-  <!-- iOS tap prompt (required for user gesture before getUserMedia) -->
+  <!-- iOS tap prompt (user gesture required) -->
   <div id="tapPrompt">
     <div>
       <p>Safari on iOS requires a tap to start the camera.</p>
@@ -74,7 +74,7 @@
   </div>
 
   <!-- Self-test & safety net:
-       - Confirms inline JS runs (status shows "inline OK")
+       - Confirms inline JS runs (status -> "inline OK")
        - Ensures the Start Camera button is visible
        - Calls the REAL app starter (window.startCameraApp) so the preview actually starts -->
   <script>
@@ -96,7 +96,6 @@
 
         tapStart.onclick = async () => {
           statusEl.textContent = 'Starting camera…';
-          // Call the REAL app camera starter exposed by script.js
           if (typeof window.startCameraApp === 'function') {
             try { await window.startCameraApp(); }
             catch (e) { statusEl.textContent = 'Camera error: ' + (e.name || e.message || e); }
@@ -108,7 +107,7 @@
     })();
   </script>
 
-  <!-- Your application script (cache-busted to force updates) -->
-  script.js?v=20260118-suppress-zxing"></script>
+  <!-- Your application script (cache-busted so updates load immediately) -->
+  <script src="script.js?v=20260118-suppress-zxing"></script>
 </body>
 </html>
