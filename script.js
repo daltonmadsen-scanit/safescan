@@ -26,7 +26,7 @@ const els = {
 };
 
 /* -------- Config -------- */
-const AUTO_STOP_AFTER_DECODE = true;     // set false to keep scanning after first decode
+const AUTO_STOP_AFTER_DECODE = true;     // false => keep scanning after first decode
 const SCAN_INTERVAL_MS = 200;
 
 // Matching thresholds
@@ -43,15 +43,15 @@ let barcodeDetector = null;              // native
 let zxingReader = null;                  // ZXing fallback
 let zxingControls = null;                // ZXing controls
 let scanning = false;
-let nativeStarted = false;               // remember if native scanner is active
-let zxLoaded = false;                    // remember if ZXing UMD loaded successfully
+let nativeStarted = false;               // set true once native scanner loop begins
+let zxLoaded = false;                    // set true once ZXing UMD is present
+let zxingErrorShown = false;             // show "ZXing not loaded" at most once
 
 /* -------- Helpers -------- */
-
 const isSecure =
   location.protocol === 'https:' ||
   location.hostname === 'localhost' ||
-  location.hostname === '127.0.0.1'
+  location.hostname === '127.0.0.1';
 
 const isIOS =
   /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -86,7 +86,7 @@ function normalizeAvoid(raw) {
   const level = Number(raw?.level ?? raw?.severity ?? 0);
   const synonyms = Array.isArray(raw?.synonyms) ? raw.synonyms : [];
 
-  // base terms from name+synonyms
+  // base terms from name + synonyms
   const baseTerms = [name, ...synonyms]
     .filter(Boolean)
     .map(t => stripDiacritics(String(t).toLowerCase()));
@@ -165,7 +165,7 @@ async function startNativeScan() {
 
   const ctx = els.canvas.getContext('2d');
   scanning = true;
-  nativeStarted = true;   // mark native as active so ZXing path stays silent
+  nativeStarted = true;   // IMPORTANT: suppress ZXing warnings once native is running
   let lastTick = 0;
 
   const loop = (ts) => {
@@ -232,14 +232,15 @@ async function loadZXingUMD(timeoutMs = 8000) {
 
 /* -------- Scanner: ZXing fallback (uses dynamic loader) -------- */
 async function startZXingScan() {
-  // If native already started, don’t run ZXing or report errors.
+  // If native scanner already started, do NOT run ZXing or report errors.
   if (nativeStarted) return false;
 
-  // Ensure ZXing UMD is present; only report error if native is unavailable.
+  // Ensure ZXing UMD is present; only report an error if native is unavailable.
   if (!window.ZXingBrowser?.BrowserMultiFormatReader) {
     const loaded = await loadZXingUMD();
     if (!loaded || !window.ZXingBrowser?.BrowserMultiFormatReader) {
-      if (!nativeStarted) {
+      if (!nativeStarted && !zxingErrorShown) {
+        zxingErrorShown = true;
         setStatus('ZXing not loaded. Check the script tag order.', true);
         console.debug('ZXing global after load attempt:', window.ZXingBrowser);
       }
@@ -434,13 +435,10 @@ async function boot() {
 
   // iOS requires user gesture to start camera
   if (isIOS && els.tapPrompt && els.tapStart) {
-    // Main iOS start button uses the REAL starter too
+    // Main iOS start button uses the REAL starter
     els.tapStart.onclick = async () => {
-      try {
-        await window.startCameraApp();
-      } catch (e) {
-        setStatus(`Camera error: ${e?.name || e?.message || e}`, true);
-      }
+      try { await window.startCameraApp(); }
+      catch (e) { setStatus(`Camera error: ${e?.name || e?.message || e}`, true); }
     };
   } else {
     try {
