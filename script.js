@@ -1,7 +1,10 @@
 
 /* ============================================================================
- SafeScan – Auto camera + Auto scan + Auto populate (native + ZXing fallback)
- ============================================================================ */
+   SafeScan – Camera + Barcode + Ingredients matching (native + ZXing fallback)
+   - Loads Level 2 & 3 triggers from triggers_level2_3_array.json
+   - Keeps inner words from parentheses during normalization
+   - Exact/word-boundary + safe partial matching on terms (canonical + synonyms)
+   ============================================================================ */
 
 /* -------- DOM -------- */
 const byId = (id) => document.getElementById(id);
@@ -23,8 +26,8 @@ const els = {
 /* -------- Config -------- */
 const AUTO_STOP_AFTER_DECODE = true;
 const SCAN_INTERVAL_MS = 200;
-const TERM_TOKEN_MIN_LEN = 5;
-const PARTIAL_TOKEN_MIN_LEN = 5;
+const TERM_TOKEN_MIN_LEN = 5;     // only keep tokens >= 5 chars
+const PARTIAL_TOKEN_MIN_LEN = 5;  // allow substring matches for long terms
 
 const RETAIL_FORMATS = new Set([
   'ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf','codabar'
@@ -36,8 +39,8 @@ let usingDeviceId = null;
 let avoidList = [];
 let lastCode = null, lastAt = 0;
 let rafId = null;
-let barcodeDetector = null;
-let zxingReader = null;
+let barcodeDetector = null;    // native
+let zxingReader = null;        // ZXing fallback
 let zxingControls = null;
 let scanning = false;
 let nativeStarted = false;
@@ -72,12 +75,18 @@ async function hasNativeRetailSupport() {
   }
 }
 
-/* -------- Avoid list -------- */
-
+/* -------- Avoid list loading -------- */
+/**
+ * Normalize diacritics to plain ASCII.
+ */
 function stripDiacritics(t) {
   return t.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
+/**
+ * Tokenize a term while keeping inner words and ignoring punctuation,
+ * and only return tokens >= TERM_TOKEN_MIN_LEN.
+ */
 function tokenizeForTerms(str) {
   if (!str) return [];
   const keep = stripDiacritics(String(str).toLowerCase()).replace(/[\(\)\[\]]/g, ' ');
@@ -85,33 +94,48 @@ function tokenizeForTerms(str) {
   return tokens.filter((t) => t.length >= TERM_TOKEN_MIN_LEN);
 }
 
+/**
+ * Adapt a raw avoid-list entry {name, level, synonyms[]} into:
+ * { name: original label (Item_Concat), level, terms: [canonical, synonyms, tokens...] }
+ */
 function normalizeAvoid(raw) {
-  const name = String(raw?.name ?? '').trim().toLowerCase();
+  const nameRaw = String(raw?.name ?? '').trim(); // canonical display (Item_Concat)
   const level = Number(raw?.level ?? 0);
   const synonyms = Array.isArray(raw?.synonyms) ? raw.synonyms : [];
 
-  const baseTerms = [name, ...synonyms]
+  // Base phrases (canonical + synonyms), lowercase & diacritics stripped
+  const baseTerms = [nameRaw, ...synonyms]
     .filter(Boolean)
-    .map((t) => stripDiacritics(String(t).toLowerCase()));
+    .map((t) => stripDiacritics(String(t).toLowerCase().trim()));
 
+  // Add tokens from canonical + synonyms
   const expandedTokens = new Set();
-  for (const s of [raw?.name, ...(synonyms ?? [])]) {
+  for (const s of [nameRaw, ...(synonyms ?? [])]) {
     tokenizeForTerms(s).forEach((tok) => expandedTokens.add(tok));
   }
 
+  // Merge full phrases + tokens
   const termSet = new Set(baseTerms);
   expandedTokens.forEach((tok) => termSet.add(tok));
 
-  return { name, level, terms: Array.from(termSet).filter(Boolean) };
+  // Ensure canonical Item_Concat (lowercased) is present
+  const canonicalFull = stripDiacritics(nameRaw.toLowerCase().trim());
+  if (canonicalFull) termSet.add(canonicalFull);
+
+  return {
+    name: nameRaw,               // human-friendly label
+    level,
+    terms: Array.from(termSet).filter(Boolean),
+  };
 }
 
-/* --------- *** YOUR ONLY MODIFIED LINE IS HERE *** --------- */
-
+/**
+ * Load the Level 2 + Level 3 triggers (array shape) with minimal caching.
+ * >>> This is the line you asked to include <<<
+ */
 async function loadAvoidList() {
   try {
-    // CHANGED THIS LINE ONLY:
     const res = await fetch('triggers_level2_3_array.json', { cache: 'no-store' });
-
     const data = await res.json();
     avoidList = Array.isArray(data) ? data.map(normalizeAvoid) : [];
     setStatus(`Avoid list loaded (${avoidList.length} items).`);
@@ -153,9 +177,7 @@ async function openStream(preferBack = true, deviceId = null) {
   els.video.setAttribute('playsinline', 'true');
   els.video.setAttribute('autoplay', 'true');
   els.video.muted = true;
-  try {
-    await els.video.play();
-  } catch {}
+  try { await els.video.play(); } catch {}
 }
 
 /* -------- Native scan -------- */
@@ -201,12 +223,11 @@ async function startNativeScan() {
       if (!text) return;
 
       const now = Date.now();
-      if (text && (text !== lastCode || now - lastAt > 1500)) {
+      if (text && (text !== lastCode || (now - lastAt) > 1500)) {
         lastCode = text;
         lastAt = now;
         setStatus(`Scanned: ${text}`);
         onBarcode(text, { format: c.format });
-
         if (AUTO_STOP_AFTER_DECODE) stopScanning();
       }
     }).catch(() => {});
@@ -278,18 +299,16 @@ async function startZXingScan() {
     zxingControls = await zxingReader.decodeFromVideoDevice(
       deviceId,
       els.video,
-      (result, err) => {
+      (result) => {
         if (!scanning) return;
-
         if (result) {
           const text = result.getText();
           const now = Date.now();
-          if (text && (text !== lastCode || now - lastAt > 1500)) {
+          if (text && (text !== lastCode || (now - lastAt) > 1500)) {
             lastCode = text;
             lastAt = now;
             setStatus(`Scanned: ${text}`);
             onBarcode(text, result);
-
             if (AUTO_STOP_AFTER_DECODE) stopScanning();
           }
         }
@@ -313,45 +332,58 @@ function stopScanning() {
 }
 
 /* -------- Barcode handler -------- */
-function onBarcode(barcode) {
+function onBarcode(barcode /*, meta */) {
   fetchAndDisplayProduct(barcode);
 }
 
-/* -------- OFF Ingredients matching -------- */
-
+/* -------- Ingredients parsing & matching -------- */
 function uniq(list) {
   const s = new Set();
   const out = [];
   for (const x of list) {
-    if (!s.has(x)) {
-      s.add(x);
-      out.push(x);
-    }
+    if (!s.has(x)) { s.add(x); out.push(x); }
   }
   return out;
 }
 
+/**
+ * Keep inner words from parentheses (the “sanity check”):
+ * "vegetable oil (canola, soybean)" → "vegetable oil  canola, soybean"
+ */
 function normalizeIngredient(s) {
   if (!s) return '';
   let t = stripDiacritics(String(s).toLowerCase().trim());
-  t = t.replace(/\([^)]*\)/g, '');
+
+  // Preserve inner words from parentheses instead of deleting them
+  t = t.replace(/[()]/g, ' ');
+
+  // Collapse whitespace/dash/underscore and strip non-alnum edges
   t = t.replace(/[\s\-_]+/g, ' ').trim();
   t = t.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '');
   return t;
 }
 
+/**
+ * Build a normalized ingredients array from either OFF's structured list
+ * or the free-text field. We optionally treat parentheses as commas first
+ * to split inner sub-ingredients into separate tokens.
+ */
 function buildIngredientsList(text, arr) {
   if (arr && arr.length)
     return uniq(arr.map((x) => normalizeIngredient(x?.text ?? '')).filter(Boolean));
 
   if (!text) return [];
-  return uniq(text.split(/[,\[\];]+/).map(normalizeIngredient).filter(Boolean));
+  const pre = text.replace(/[()]/g, ','); // helps split “(canola, soybean)”
+  return uniq(pre.split(/[,\[\];]+/).map(normalizeIngredient).filter(Boolean));
 }
 
-function escapeRegex(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
+/**
+ * Matching:
+ * 1) exact or whole-word boundary;
+ * 2) if no hit, safe partial (length >= PARTIAL_TOKEN_MIN_LEN).
+ */
 function findTermHit(ingredients, terms) {
   for (const t of terms) {
     const needle = t.toLowerCase().trim();
@@ -375,7 +407,6 @@ function matchIngredients(ingredients, avoid) {
   const lvl2 = [], lvl3 = [];
   for (const entry of avoid) {
     if (!entry || !entry.terms || !entry.level) continue;
-
     const hit = findTermHit(ingredients, entry.terms);
     if (hit) (entry.level === 3 ? lvl3 : lvl2).push({ term: hit, name: entry.name });
   }
@@ -394,14 +425,13 @@ function renderWarnings(matches) {
     }
     items.forEach((m) => {
       const li = document.createElement('li');
-      li.textContent = m.term;
+      li.textContent = m.term; // show matched term only
       ul.appendChild(li);
     });
   };
 
   setList(els.resLvl3, lvl3, 'None');
   setList(els.resLvl2, lvl2, 'None');
-
   if (els.resOK) {
     els.resOK.innerHTML = (!lvl2.length && !lvl3.length)
       ? '<li>No flagged ingredients detected</li>'
@@ -409,7 +439,7 @@ function renderWarnings(matches) {
   }
 }
 
-/* -------- Product lookup -------- */
+/* -------- Product lookup (OpenFoodFacts) -------- */
 async function fetchAndDisplayProduct(barcode) {
   setStatus(`Looking up ${barcode}…`);
   const base = 'https://world.openfoodfacts.org/api/v2/product/';
@@ -428,9 +458,9 @@ async function fetchAndDisplayProduct(barcode) {
 
     const ingredientsList = buildIngredientsList(ingTxt, ingArr);
 
-    els.resName.textContent = name;
-    els.resBrand.textContent = brand;
-    els.resBarcode.textContent = barcode;
+    els.resName.textContent = name || '—';
+    els.resBrand.textContent = brand || '—';
+    els.resBarcode.textContent = barcode || '—';
     els.resIngredients.textContent = ingredientsList.join(', ') || '—';
 
     const matches = matchIngredients(ingredientsList, avoidList);
@@ -443,10 +473,11 @@ async function fetchAndDisplayProduct(barcode) {
   }
 }
 
-/* -------- Start camera -------- */
+/* -------- Start camera (exposed for iOS tap-to-start) -------- */
 window.startCameraApp = async function () {
   try {
     await openStream(true);
+
     const canNativeRetail = await hasNativeRetailSupport();
     const okNative = canNativeRetail ? await startNativeScan() : false;
     if (!okNative) await startZXingScan();
@@ -476,9 +507,7 @@ async function boot() {
   if (isIOS && els.tapPrompt && els.tapStart) {
     els.tapStart.onclick = async () => {
       try { await window.startCameraApp(); }
-      catch (e) {
-        setStatus(`Camera error: ${e?.name ?? e?.message ?? e}`, true);
-      }
+      catch (e) { setStatus(`Camera error: ${e?.name ?? e?.message ?? e}`, true); }
     };
   } else {
     try {
