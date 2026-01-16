@@ -18,7 +18,7 @@ const els = {
   resIngredients: byId('res-ingredients'),
   resLvl2: byId('res-lvl2'),
   resLvl3: byId('res-lvl3'),
-  resOK: byId('res-ok'),
+  resOK: byId('res-ok')
 };
 
 /* -------- Config -------- */
@@ -59,33 +59,38 @@ function setStatus(msg, isError = false) {
 }
 
 /* -------- Avoid list -------- */
-/** Tokenize a string into long tokens, preserving parentheses content as tokens */
+
+// strip diacritics: "açai" -> "acai"
+function stripDiacritics(t) {
+  return t.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+// Tokenize while KEEPING inner words (e.g., Wheat (semolina) -> includes "semolina")
 function tokenizeForTerms(str) {
   if (!str) return [];
-  // Keep text but drop parentheses characters themselves (not their content)
-  const keep = String(str).toLowerCase().replace(/[()]/g, ' ');
-  // Split on non-alphanumeric boundaries
+  const keep = stripDiacritics(String(str).toLowerCase()).replace(/[()]/g, ' ');
   const tokens = keep.split(/[^a-z0-9]+/).filter(Boolean);
-  // Keep only long-enough tokens to avoid noise
   return tokens.filter(t => t.length >= TERM_TOKEN_MIN_LEN);
 }
 
-/** Normalize an avoid-list entry and enrich with tokens from name/synonyms */
+// Normalize an avoid-list entry and enrich with tokens from name/synonyms
 function normalizeAvoid(raw) {
   const name = String(raw?.name ?? raw?.term ?? '').trim().toLowerCase();
   const level = Number(raw?.level ?? raw?.severity ?? 0);
   const synonyms = Array.isArray(raw?.synonyms) ? raw.synonyms : [];
 
-  // Base terms straight from name+synonyms
-  const baseTerms = [name, ...synonyms].filter(Boolean).map(t => t.toLowerCase());
+  // base terms from name+synonyms
+  const baseTerms = [name, ...synonyms]
+    .filter(Boolean)
+    .map(t => stripDiacritics(String(t).toLowerCase()));
 
-  // Expand tokens (captures inner words like "semolina" from "Wheat (semolina)")
+  // tokens from name and synonyms (captures "semolina")
   const expandedTokens = new Set();
   for (const s of [raw?.name, ...(synonyms ?? [])]) {
     tokenizeForTerms(s).forEach(tok => expandedTokens.add(tok));
   }
 
-  // Merge into unique terms
+  // unique final terms
   const termSet = new Set(baseTerms);
   expandedTokens.forEach(tok => termSet.add(tok));
   const terms = Array.from(termSet).filter(Boolean);
@@ -113,7 +118,7 @@ async function openStream(preferBack = true, deviceId = null) {
         video: preferBack
           ? { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
           : true,
-        audio: false,
+        audio: false
       };
   setStatus('Requesting camera…');
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -247,10 +252,10 @@ function uniq(list) { const s = new Set(); const out = []; for (const x of list)
 
 function normalizeIngredient(s) {
   if (!s) return '';
-  let t = s.toLowerCase().trim();
+  let t = stripDiacritics(String(s).toLowerCase().trim());
   t = t.replace(/\([^)]*\)/g, '');               // remove parentheses content
-  t = t.replace(/[ \-\_]+/g, ' ').trim();        // collapse separators
-  t = t.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, ''); // strip non-alnum ends
+  t = t.replace(/[ \-_]+/g, ' ').trim();         // collapse -, _ and spaces
+  t = t.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, ''); // strip non-alnum edges
   return t;
 }
 
@@ -272,13 +277,13 @@ function findTermHit(ingredients, terms) {
     const needle = t.toLowerCase().trim();
     if (!needle) continue;
 
-    // 1) exact or whole-word boundary
+    // exact or whole-word boundary
     const boundary = new RegExp(`\\b${escapeRegex(needle)}\\b`);
     for (const ing of ingredients) {
       if (ing === needle || boundary.test(ing)) return needle;
     }
 
-    // 2) safe partial: only if the term is long enough
+    // safe partial: only if the term is long enough
     if (needle.length >= PARTIAL_TOKEN_MIN_LEN) {
       for (const ing of ingredients) {
         if (ing.includes(needle)) return needle;
