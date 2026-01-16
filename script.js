@@ -1,8 +1,9 @@
 
 /* ============================================================================
    SafeScan – Auto camera + Auto scan + Auto populate (native + ZXing fallback)
-   Token expansion from avoid list + always-on tokenized partial matching
-   Render warnings: ONLY the matched term(s) per level
+   - Robust dynamic ZXing loader (Option B)
+   - Token expansion from avoid list + always-on tokenized partial matching
+   - Render warnings: ONLY the matched term(s) per level
    ============================================================================ */
 
 /* -------- DOM -------- */
@@ -15,7 +16,7 @@ const els = {
   tapStart: byId('tapStart'),
   resName: byId('res-name'),
   resBrand: byId('res-brand'),
-  resBarcode: byId('res-barcode'),
+  resBarcode: by('res-barcode'),
   resIngredients: byId('res-ingredients'),
   resLvl2: byId('res-lvl2'),
   resLvl3: byId('res-lvl3'),
@@ -187,19 +188,54 @@ async function startNativeScan() {
   return true;
 }
 
-/* -------- Scanner: ZXing fallback -------- */
+/* -------- Robust ZXing dynamic loader (Option B) -------- */
+async function loadZXingUMD(timeoutMs = 8000) {
+  if (window.ZXingBrowser?.BrowserMultiFormatReader) return true;
+
+  const SOURCES = [
+    'https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js',
+    'https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js'
+  ];
+
+  const tryLoad = (src) => new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.defer = true;
+    s.crossOrigin = 'anonymous';
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.head.appendChild(s);
+  });
+
+  for (const src of SOURCES) {
+    const ok = await tryLoad(src);
+    if (!ok) continue;
+
+    const t0 = Date.now();
+    while (Date.now() - t0 < timeoutMs) {
+      if (window.ZXingBrowser?.BrowserMultiFormatReader) return true;
+      await new Promise(r => setTimeout(r, 50));
+    }
+  }
+  return !!(window.ZXingBrowser?.BrowserMultiFormatReader);
+}
+
+/* -------- Scanner: ZXing fallback (uses dynamic loader) -------- */
 async function startZXingScan() {
-  if (!window.ZXingBrowser || !ZXingBrowser.BrowserMultiFormatReader) {
-    await loadZXingUMD();
-    if (!window.ZXingBrowser || !ZXingBrowser.BrowserMultiFormatReader) {
+  // Ensure ZXing UMD is present
+  if (!window.ZXingBrowser?.BrowserMultiFormatReader) {
+    const loaded = await loadZXingUMD();
+    if (!loaded || !window.ZXingBrowser?.BrowserMultiFormatReader) {
       setStatus('ZXing not loaded. Check the script tag order.', true);
       return false;
     }
   }
+
   try {
     zxingReader = new ZXingBrowser.BrowserMultiFormatReader();
     scanning = true;
     const deviceId = usingDeviceId ?? null;
+
     zxingControls = await zxingReader.decodeFromVideoDevice(deviceId, els.video, (result, err) => {
       if (!scanning) return;
       if (result) {
@@ -215,6 +251,7 @@ async function startZXingScan() {
         console.debug('ZXing error', err);
       }
     });
+
     setStatus('Scanning (ZXing)… point camera at the barcode.');
     return true;
   } catch (e) {
@@ -222,25 +259,13 @@ async function startZXingScan() {
     return false;
   }
 }
+
 function stopScanning() {
   scanning = false;
   if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
   try { zxingControls?.stop(); } catch {}
   try { ZXingBrowser?.BrowserCodeReader?._stopStreams?.(els.video); } catch {}
   try { zxingReader?.reset?.(); } catch {}
-}
-
-/* -------- Dynamic loader (safety net) -------- */
-function loadZXingUMD() {
-  return new Promise((resolve) => {
-    if (window.ZXingBrowser?.BrowserMultiFormatReader) return resolve();
-    const s = document.createElement('script');
-    s.src = 'https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js';
-    s.crossOrigin = 'anonymous';
-    s.onload = () => resolve();
-    s.onerror = () => resolve();
-    document.head.appendChild(s);
-  });
 }
 
 /* -------- Barcode handler -------- */
@@ -380,10 +405,11 @@ async function boot() {
   }
   await loadAvoidList();
 
-  if (isIOS) {
-    els.tapPrompt?.style && (els.tapPrompt.style.display = 'flex');
+  // iOS requires user gesture to start camera
+  if (isIOS && els.tapPrompt && els.tapStart) {
+    els.tapPrompt.style.display = 'flex';
     const onceStart = async () => {
-      if (els.tapPrompt?.style) els.tapPrompt.style.display = 'none';
+      els.tapPrompt.style.display = 'none';
       try {
         await openStream(true);
         const okNative = await startNativeScan();
@@ -392,7 +418,7 @@ async function boot() {
         setStatus(`Camera error: ${e?.name ?? e}`, true);
       }
     };
-    els.tapStart?.addEventListener('click', onceStart, { once: true });
+    els.tapStart.addEventListener('click', onceStart, { once: true });
   } else {
     try {
       await openStream(true);
