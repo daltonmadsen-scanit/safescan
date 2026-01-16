@@ -4,46 +4,55 @@
 <head>
   <meta charset="utf-8" />
   <title>SafeScan – Barcode & Ingredients</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0b5" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <style>
-    :root { color-scheme: light dark; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 16px; }
-    header { margin-bottom: 12px; }
-    #preview { width: 100%; max-width: 640px; border: 1px solid #ccc; border-radius: 8px; background: #000; }
-    #camera-status { margin-top: 8px; min-height: 1.2em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 12px; max-width: 1000px; }
-    @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
-    ul { margin: 4px 0 0 18px; }
-    .tapPrompt {
-      position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
-      background: rgba(0,0,0,0.55); color: #fff; font-size: 1.1rem; z-index: 9999;
-      text-align: center; padding: 24px;
-    }
-    .tapPrompt button {
-      margin-top: 12px; padding: 10px 16px; border-radius: 8px; border: 0; background: #0b5; color: #fff;
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 1rem; }
+    header { margin-bottom: 1rem; }
+    #camera-status { color: #444; margin: .5rem 0 1rem; }
+    #preview { width: 100%; max-width: 640px; background: #000; border-radius: 8px; }
+    #tapPrompt { display:none; align-items:center; justify-content:center; margin: 1rem 0; }
+    #tapStart { padding:.6rem 1rem; border-radius:6px; border:1px solid #ccc; background:#f8f8f8; }
+    .section { margin-top: 1rem; }
+    ul { margin: .5rem 0; padding-left: 1.2rem; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    @media (min-width: 900px) {
+      .grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
   <header>
     <h1>SafeScan – Barcode & Ingredients</h1>
+    <div id="camera-status">Initializing…</div>
   </header>
 
-  <section class="grid">
+  <!-- Camera preview -->
+  <video id="preview" playsinline muted autoplay></video>
+  <canvas id="snapshot" style="display:none;"></canvas>
+
+  <!-- iOS tap prompt -->
+  <div id="tapPrompt">
     <div>
-      <video id="preview" playsinline autoplay muted></video>
-      <canvas id="snapshot" style="display:none"></canvas>
-      <div id="camera-status">Initializing…</div>
+      <p>Safari on iOS requires a tap to start the camera.</p>
+      <button id="tapStart" type="button">Start Camera</button>
     </div>
+  </div>
 
-    <div>
-      <h3>Scan a barcode to see product ingredients & warnings</h3>
-      <p><strong>Product:</strong> <span id="res-name">—</span></p>
-      <p><strong>Brand:</strong> <span id="res-brand">—</span></p>
-      <p><strong>Barcode:</strong> <span id="res-barcode">—</span></p>
-      <p><strong>Ingredients:</strong><br><span id="res-ingredients">—</span></p>
+  <!-- Results -->
+  <div class="grid">
+    <section class="section">
+      <h3>Product info</h3>
+      <div><strong>Product:</strong> <span id="res-name">—</span></div>
+      <div><strong>Brand:</strong> <span id="res-brand">—</span></div>
+      <div><strong>Barcode:</strong> <span id="res-barcode">—</span></div>
+      <div class="section">
+        <strong>Ingredients:</strong>
+        <div id="res-ingredients">—</div>
+      </div>
+    </section>
 
+    <section class="section">
+      <h3>Warnings</h3>
       <h4>Level 3 ⚠️</h4>
       <ul id="res-lvl3"><li>—</li></ul>
 
@@ -52,20 +61,10 @@
 
       <h4>No matches</h4>
       <ul id="res-ok"><li>—</li></ul>
-    </div>
-  </section>
-
-  <!-- iOS “Tap to start” overlay (shown only on iOS) -->
-  <div id="tapPrompt" class="tapPrompt">
-    <div>
-      <div>Safari on iOS requires a tap to start the camera.</div>
-      <button id="tapStart" type="button">Start Camera</button>
-    </div>
+    </section>
   </div>
 
-  <!-- Load ZXing UMD FIRST (no async/module) -->
-  <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js" crossorigin="anonymous"></script>
-  <!-- Your app script AFTER (defer keeps order & waits for DOM parse) -->
-  <script src="./script.js" defer></script>
+  <!-- Your app script (cache-busted) -->
+  <script src="script.js?v=20260116-iphone-fix"></script>
 </body>
 </html>
