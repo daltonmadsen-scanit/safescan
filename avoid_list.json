@@ -1,675 +1,119 @@
 
 [
-  {
-    "name": "acai berry",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "almond cheese",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "aluminum silicate",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "asiago cheese",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "atlantic scallops",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "avocado oil",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "beef bone broth",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "beef liver",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "blue catfish",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "blue crab",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "blue mussels",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "broccoli",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "brown prawns",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "buckwheat",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "bulgur wheat",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "button",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "calcium 5 ribonucleotide",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "calcium diglutamate",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "calcium gluconate",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "calcium malate",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "calcium sulfate",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "canola oil",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "caraway",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "carboxymethyl cellulose",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "carrageenan",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "carrots",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "casein",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "cassava flour",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "cherries",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "chicken dark",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "coconut oil",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "colby cheese",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "collard greens",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "cortland apple",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "cotija cheese",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "cream",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "dark brown sugar",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "diastatic malt powder",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "dicalcium ionisate",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "edamame",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "feijoa",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "figs",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "ghee",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "ground boar pork",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "ground wagyu beef",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "gum arabic",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "habanero pepper",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "harissa",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "havarti cheese",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "hemp",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "honey crisp apple",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "horseradish",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "hydroxypropylcellulose",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "japanese eel",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "jasmine rice",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "kumamoto oysters",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "lactitol",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "locust bean gum carob gum",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "mackerel spanish",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "mahi mahi",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "mangosteen",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "mascarpone cheese",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "methylcellulose",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "miso",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "monostarch phosphate",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "oyster",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "paprika",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "peanut oil",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "pepper red cayenne",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "pink himalayan salt",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "pistachio",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "potassium chloride",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "red curry",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "rice jasmine",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "rice white",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "rye",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "sago",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "sardines pacific",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "semolina wheat",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "snow crab",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "spanish mackerel",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "spaghetti squash",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "stearic acid",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "stilton cheese",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "sunflower seed",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "tara meal",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "tempeh",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "tilapia nile",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "tomatillo",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "triticale",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "trout steelhead",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "turmeric",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "wagyu beef ground",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "watercress",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "yellowtail snapper",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "zein",
-    "level": 3,
-    "synonyms": []
-  },
-  {
-    "name": "aluminum potassium silicate",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "allspice",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "amla",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "ashwagandha root",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "atlantic swordfish",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "bay leaf",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "beef tallow",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "black bean",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "blue point oysters",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "brick cheese",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "camembert cheese",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "cottage cheese",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "cottonseed oil",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "disodium ionisate",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "erythritol",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "field pea",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "garlic purple",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "ginger root",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "gochujang",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "green lipped mussels",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "haddock pacific",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "halloumi cheese",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "isomalt",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "jarlsberg cheese",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "jellyfish",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "kimchi",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "lane snapper",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "lemons",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "lion's mane",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "lombster european",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "lupin bean",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "mannitol",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "marshmallow root",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "millet flour",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "msg",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "mung bean",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "mustard seed",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "nutritional yeast",
-    "level": 2,
-    "synonyms": []
-  },
-  {
-    "name": "olives black",
-    "level": 2,
+  { "name": "semolina wheat", "level": 3, "synonyms": ["semolina", "wheat semolina", "durum semolina"] },
+  { "name": "carrageenan", "level": 3, "synonyms": ["e407", "irish moss", "chondrus crispus"] },
+  { "name": "carboxymethyl cellulose", "level": 3, "synonyms": ["cellulose gum", "cmc", "e466", "sodium carboxymethylcellulose"] },
+  { "name": "hydroxypropylcellulose", "level": 3, "synonyms": ["hpc", "hydroxypropyl cellulose", "e463"] },
+  { "name": "methylcellulose", "level": 3, "synonyms": ["methyl cellulose", "e461"] },
+  { "name": "gum arabic", "level": 3, "synonyms": ["acacia gum", "gum acacia", "e414"] },
+  { "name": "locust bean gum carob gum", "level": 3, "synonyms": ["locust bean gum", "carob gum", "carob bean gum", "e410"] },
+  { "name": "potassium chloride", "level": 3, "synonyms": ["kcl", "potassium salt"] },
+  { "name": "stearic acid", "level": 3, "synonyms": ["octadecanoic acid", "e570"] },
+  { "name": "xylitol", "level": 3, "synonyms": ["e967"] },
+  { "name": "sodium cyclamate", "level": 3, "synonyms": ["cyclamate", "e952"] },
+  { "name": "lactitol", "level": 3, "synonyms": ["e966"] },
+
+  { "name": "msg", "level": 2, "synonyms": ["monosodium glutamate", "e621"] },
+  { "name": "yeast extract", "level": 2, "synonyms": ["autolyzed yeast extract", "yeast extract paste", "yeast extract powder"] },
+  { "name": "nutritional yeast", "level": 2, "synonyms": ["nooch", "inactive yeast"] },
+  { "name": "erythritol", "level": 2, "synonyms": ["e968"] },
+  { "name": "isomalt", "level": 2, "synonyms": ["e953"] },
+  { "name": "mannitol", "level": 2, "synonyms": ["e421"] },
+  { "name": "sucralose", "level": 2, "synonyms": ["e955"] },
+  { "name": "stevia", "level": 2, "synonyms": ["steviol glycosides", "reb a", "rebaudioside a", "e960"] },
+  { "name": "polydextrose", "level": 2, "synonyms": ["e1200"] },
+  { "name": "potassium alginate", "level": 2, "synonyms": ["e402", "alginate"] },
+
+  { "name": "canola oil", "level": 3, "synonyms": ["rapeseed oil"] },
+  { "name": "peanut oil", "level": 3, "synonyms": ["groundnut oil", "arachis oil"] },
+  { "name": "avocado oil", "level": 3, "synonyms": ["persea gratissima oil"] },
+  { "name": "ghee", "level": 3, "synonyms": ["clarified butter"] },
+  { "name": "cream", "level": 3, "synonyms": ["heavy cream", "whipping cream"] },
+  { "name": "casein", "level": 3, "synonyms": ["caseinate", "milk protein"] },
+
+  { "name": "paprika", "level": 3, "synonyms": ["paprika extract", "capsicum annuum"] },
+  { "name": "pepper red cayenne", "level": 3, "synonyms": ["cayenne", "cayenne pepper"] },
+  { "name": "harissa", "level": 3, "synonyms": ["harissa paste"] },
+  { "name": "miso", "level": 3, "synonyms": ["soybean paste", "miso paste"] },
+
+  { "name": "acai berry", "level": 3, "synonyms": ["açai", "acai"] },
+  { "name": "turmeric", "level": 3, "synonyms": ["curcuma longa", "curcumin"] },
+
+  { "name": "almond cheese", "level": 3, "synonyms": ["almond-based cheese", "almond milk cheese"] },
+  { "name": "asiago cheese", "level": 3, "synonyms": ["asiago"] },
+  { "name": "colby cheese", "level": 3, "synonyms": ["colby"] },
+  { "name": "cotija cheese", "level": 3, "synonyms": ["cotija"] },
+  { "name": "havarti cheese", "level": 3, "synonyms": ["havarti"] },
+  { "name": "mascarpone cheese", "level": 3, "synonyms": ["mascarpone"] },
+  { "name": "stilton cheese", "level": 3, "synonyms": ["stilton"] },
+
+  { "name": "sunflower seed", "level": 3, "synonyms": ["sunflower seeds"] },
+  { "name": "pistachio", "level": 3, "synonyms": ["pistachios"] },
+
+  { "name": "bulgur wheat", "level": 3, "synonyms": ["bulgur", "burghul"] },
+  { "name": "rice jasmine", "level": 3, "synonyms": ["jasmine rice"] },
+  { "name": "rice white", "level": 3, "synonyms": ["white rice"] },
+  { "name": "sardines pacific", "level": 3, "synonyms": ["sardine", "pacific sardines"] },
+  { "name": "mackerel spanish", "level": 3, "synonyms": ["spanish mackerel"] },
+  { "name": "mahi mahi", "level": 3, "synonyms": ["dolphinfish"] },
+  { "name": "tilapia nile", "level": 3, "synonyms": ["tilapia", "nile tilapia"] },
+  { "name": "trout steelhead", "level": 3, "synonyms": ["steelhead trout"] },
+  { "name": "atlantic scallops", "level": 3, "synonyms": ["scallops"] },
+  { "name": "oyster", "level": 3, "synonyms": ["oysters"] },
+  { "name": "kumamoto oysters", "level": 3, "synonyms": ["kumamoto oyster", "oysters"] },
+  { "name": "blue mussels", "level": 3, "synonyms": ["mussels"] },
+  { "name": "yellowtail snapper", "level": 3, "synonyms": ["snapper"] },
+
+  { "name": "tomatillo", "level": 3, "synonyms": ["physalis philadelphica"] },
+  { "name": "watercress", "level": 3, "synonyms": ["nasturtium officinale"] },
+
+  { "name": "caraway", "level": 3, "synonyms": ["carum carvi"] },
+  { "name": "habanero pepper", "level": 3, "synonyms": ["habanero"] },
+
+  { "name": "pink himalayan salt", "level": 3, "synonyms": ["himalayan pink salt"] },
+  { "name": "potassium chloride", "level": 3, "synonyms": ["kcl", "potassium salt"] },
+
+  { "name": "calcium sulfate", "level": 3, "synonyms": ["gypsum", "e516"] },
+  { "name": "calcium 5 ribonucleotide", "level": 3, "synonyms": ["calcium 5'-ribonucleotide"] },
+  { "name": "calcium diglutamate", "level": 3, "synonyms": ["calcium glutamate"] },
+  { "name": "calcium gluconate", "level": 3, "synonyms": ["e578"] },
+
+  { "name": "diastatic malt powder", "level": 3, "synonyms": ["malted barley powder", "diastase"] },
+  { "name": "gum arabic", "level": 3, "synonyms": ["acacia gum", "gum acacia", "e414"] },
+  { "name": "locust bean gum carob gum", "level": 3, "synonyms": ["locust bean gum", "carob gum", "carob bean gum", "e410"] },
+
+  { "name": "edamame", "level": 3, "synonyms": ["green soybeans", "young soybeans"] },
+  { "name": "tempeh", "level": 3, "synonyms": ["fermented soybean cake", "tempe"] },
+  { "name": "miso", "level": 3, "synonyms": ["soybean paste", "miso paste"] },
+
+  { "name": "pepper red cayenne", "level": 3, "synonyms": ["cayenne", "cayenne pepper"] },
+  { "name": "paprika", "level": 3, "synonyms": ["paprika extract", "capsicum annuum"] },
+
+  { "name": "erythritol", "level": 2, "synonyms": ["e968"] },
+  { "name": "isomalt", "level": 2, "synonyms": ["e953"] },
+  { "name": "mannitol", "level": 2, "synonyms": ["e421"] },
+  { "name": "polydextrose", "level": 2, "synonyms": ["e1200"] },
+  { "name": "potassium alginate", "level": 2, "synonyms": ["e402", "alginate"] },
+
+  { "name": "gochujang", "level": 2, "synonyms": ["korean chili paste", "gochujang paste"] },
+  { "name": "kimchi", "level": 2, "synonyms": ["kimchee"] },
+  { "name": "oregano", "level": 2, "synonyms": ["origanum vulgare"] },
+  { "name": "bay leaf", "level": 2, "synonyms": ["bay leaves", "laurel leaf", "laurus nobilis"] },
+  { "name": "peppermint", "level": 2, "synonyms": ["mentha piperita", "peppermint leaf"] },
+
+  { "name": "atlantic swordfish", "level": 2, "synonyms": ["swordfish"] },
+  { "name": "lane snapper", "level": 2, "synonyms": ["snapper"] },
+  { "name": "green lipped mussels", "level": 2, "synonyms": ["green-lipped mussel", "perna canaliculus"] },
+  { "name": "blue point oysters", "level": 2, "synonyms": ["blue point oyster", "oysters"] },
+
+  { "name": "brick cheese", "level": 2, "synonyms": ["brick"] },
+  { "name": "camembert cheese", "level": 2, "synonyms": ["camembert"] },
+  { "name": "cottage cheese", "level": 2, "synonyms": ["paneer cottage cheese", "curd cheese"] },
+  { "name": "halloumi cheese", "level": 2, "synonyms": ["halloumi"] },
+  { "name": "jarlsberg cheese", "level": 2, "synonyms": ["jarlsberg"] },
+  { "name": "provolone cheese", "level": 2, "synonyms": ["provolone"] },
+  { "name": "romano cheese", "level": 2, "synonyms": ["romano"] },
+
+  { "name": "olives black", "level": 2, "synonyms": ["black olives"] }
+]
+``
