@@ -1,9 +1,12 @@
 
 /* ============================================================================
-   SafeScan – Camera + Barcode + Ingredients matching (native + ZXing fallback)
-   - Loads Level 2 & 3 triggers from triggers_level2_3_array.json
-   - Keeps inner words from parentheses during normalization
-   - Exact/word-boundary + safe partial matching on terms (canonical + synonyms)
+   SafeScan – Strict triggers for Level 2 & 3
+   - Loads triggers_level2_3_array.json (array: {name, level, synonyms[]})
+   - Strict matching:
+       • default = whole-word/phrase only (no loose substrings)
+       • allow E-number flexibility (E414, E-414, E 414)
+       • allow space↔hyphen flexibility (carboxymethyl cellulose vs carboxymethyl-cellulose)
+       • avoid generic single-word false positives (e.g., "oil", "salt", "cheese")
    ============================================================================ */
 
 /* -------- DOM -------- */
@@ -26,8 +29,18 @@ const els = {
 /* -------- Config -------- */
 const AUTO_STOP_AFTER_DECODE = true;
 const SCAN_INTERVAL_MS = 200;
-const TERM_TOKEN_MIN_LEN = 5;     // only keep tokens >= 5 chars
-const PARTIAL_TOKEN_MIN_LEN = 5;  // allow substring matches for long terms
+
+// STRICT MATCH options
+const STRICT_WORD_BOUNDARY_ONLY = true;   // disallow generic substring matching
+const ALLOW_HYPHEN_SPACE_FLEX = true;     // allow space<->hyphen swaps inside a term
+const ALLOW_E_NUMBER_FLEX = true;         // E621 == E-621 == E 621
+
+// If a term is a single "generic" word (e.g. 'oil', 'salt', 'butter'), require a longer phrase.
+const GENERIC_SINGLE_WORDS = new Set([
+  'oil','salt','pepper','cheese','milk','cream','butter','liver','flour',
+  'gum','starch','sugar','vinegar','syrup','yeast','protein','collagen',
+  'broth','powder','bean','beans','pepperoni','pasta'
+]);
 
 const RETAIL_FORMATS = new Set([
   'ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf','codabar'
@@ -76,68 +89,106 @@ async function hasNativeRetailSupport() {
 }
 
 /* -------- Avoid list loading -------- */
-/**
- * Normalize diacritics to plain ASCII.
- */
 function stripDiacritics(t) {
   return t.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
 /**
- * Tokenize a term while keeping inner words and ignoring punctuation,
- * and only return tokens >= TERM_TOKEN_MIN_LEN.
+ * Keep tokens >=5 chars for robustness (can tweak if needed)
  */
 function tokenizeForTerms(str) {
   if (!str) return [];
   const keep = stripDiacritics(String(str).toLowerCase()).replace(/[\(\)\[\]]/g, ' ');
   const tokens = keep.split(/[^a-z0-9]+/).filter(Boolean);
-  return tokens.filter((t) => t.length >= TERM_TOKEN_MIN_LEN);
+  return tokens.filter((t) => t.length >= 5);
 }
 
 /**
- * Adapt a raw avoid-list entry {name, level, synonyms[]} into:
- * { name: original label (Item_Concat), level, terms: [canonical, synonyms, tokens...] }
+ * Build a REGEX-safe pattern for a term:
+ * - word boundaries
+ * - optional space<->hyphen flexibility
+ * - optional E-number flexibility
+ */
+function buildStrictPatternForTerm(term) {
+  let t = stripDiacritics(String(term).toLowerCase().trim());
+  if (!t) return null;
+
+  // Escape regex, then allow space<->hyphen flexibility
+  let escaped = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (ALLOW_HYPHEN_SPACE_FLEX) {
+    // Replace literal spaces with [\s-]+ (one or more space or hyphen)
+    escaped = escaped.replace(/\s+/g, '[\\s-]+');
+  }
+
+  // E-number flex: transform 'e123' to pattern allowing E 123 / E-123
+  if (ALLOW_E_NUMBER_FLEX) {
+    escaped = escaped.replace(/\be\s*[- ]?\s*(\d{3,4})\b/gi, '[eE][\\s-]?$1');
+  }
+
+  // Word boundaries around the whole phrase
+  return new RegExp(`(?<!\\w)${escaped}(?!\\w)`, 'i');
+}
+
+/**
+ * Adapt a raw entry {name, level, synonyms[]} into:
+ * { name, level, terms: [...], patterns: [RegExp, ...] }
+ * where 'name' should be Item_Concat from your JSON.
  */
 function normalizeAvoid(raw) {
-  const nameRaw = String(raw?.name ?? '').trim(); // canonical display (Item_Concat)
-  const level = Number(raw?.level ?? 0);
+  const nameRaw = String(raw?.name ?? '').trim();     // Item_Concat as canonical
+  const level   = Number(raw?.level ?? 0);
   const synonyms = Array.isArray(raw?.synonyms) ? raw.synonyms : [];
 
-  // Base phrases (canonical + synonyms), lowercase & diacritics stripped
-  const baseTerms = [nameRaw, ...synonyms]
+  // Include full phrases (canonical + synonyms) and expanded tokens
+  const fullPhrases = [nameRaw, ...synonyms]
     .filter(Boolean)
     .map((t) => stripDiacritics(String(t).toLowerCase().trim()));
 
-  // Add tokens from canonical + synonyms
-  const expandedTokens = new Set();
+  const tokenSet = new Set();
   for (const s of [nameRaw, ...(synonyms ?? [])]) {
-    tokenizeForTerms(s).forEach((tok) => expandedTokens.add(tok));
+    tokenizeForTerms(s).forEach((tok) => tokenSet.add(tok));
   }
 
-  // Merge full phrases + tokens
-  const termSet = new Set(baseTerms);
-  expandedTokens.forEach((tok) => termSet.add(tok));
+  // Strict term policy:
+  //  - Always keep full phrases
+  //  - Keep tokens unless they are too generic (e.g., "oil", "salt")
+  const terms = new Set(fullPhrases);
+  for (const tok of tokenSet) {
+    if (!GENERIC_SINGLE_WORDS.has(tok)) {
+      terms.add(tok);
+    }
+  }
 
-  // Ensure canonical Item_Concat (lowercased) is present
-  const canonicalFull = stripDiacritics(nameRaw.toLowerCase().trim());
-  if (canonicalFull) termSet.add(canonicalFull);
+  // Build regex patterns for all terms
+  const patterns = [];
+  for (const term of terms) {
+    const pat = buildStrictPatternForTerm(term);
+    if (pat) patterns.push(pat);
+  }
 
   return {
-    name: nameRaw,               // human-friendly label
+    name: nameRaw,         // human-readable canonical (Item_Concat)
     level,
-    terms: Array.from(termSet).filter(Boolean),
+    terms: Array.from(terms),
+    patterns               // compiled regexes (strict)
   };
 }
 
 /**
- * Load the Level 2 + Level 3 triggers (array shape) with minimal caching.
- * >>> This is the line you asked to include <<<
+ * Load the Level 2 + Level 3 triggers (array shape).
+ * IMPORTANT: this file must be in the same folder as index.html
  */
 async function loadAvoidList() {
   try {
     const res = await fetch('triggers_level2_3_array.json', { cache: 'no-store' });
     const data = await res.json();
-    avoidList = Array.isArray(data) ? data.map(normalizeAvoid) : [];
+    const arr  = Array.isArray(data) ? data : [];
+
+    // Normalize + compile
+    avoidList = arr
+      .filter(e => e && (e.level === 2 || e.level === 3))
+      .map(normalizeAvoid);
+
     setStatus(`Avoid list loaded (${avoidList.length} items).`);
   } catch {
     avoidList = [];
@@ -336,67 +387,43 @@ function onBarcode(barcode /*, meta */) {
   fetchAndDisplayProduct(barcode);
 }
 
-/* -------- Ingredients parsing & matching -------- */
+/* -------- Ingredients parsing & STRICT matching -------- */
 function uniq(list) {
   const s = new Set();
   const out = [];
-  for (const x of list) {
-    if (!s.has(x)) { s.add(x); out.push(x); }
-  }
+  for (const x of list) { if (!s.has(x)) { s.add(x); out.push(x); } }
   return out;
 }
 
-/**
- * Keep inner words from parentheses (the “sanity check”):
- * "vegetable oil (canola, soybean)" → "vegetable oil  canola, soybean"
- */
+// Keep inner words from parentheses so "(canola, soybean)" survives
 function normalizeIngredient(s) {
   if (!s) return '';
   let t = stripDiacritics(String(s).toLowerCase().trim());
-
-  // Preserve inner words from parentheses instead of deleting them
-  t = t.replace(/[()]/g, ' ');
-
-  // Collapse whitespace/dash/underscore and strip non-alnum edges
+  t = t.replace(/[()]/g, ' ');                    // keep inner words
   t = t.replace(/[\s\-_]+/g, ' ').trim();
   t = t.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '');
   return t;
 }
 
-/**
- * Build a normalized ingredients array from either OFF's structured list
- * or the free-text field. We optionally treat parentheses as commas first
- * to split inner sub-ingredients into separate tokens.
- */
 function buildIngredientsList(text, arr) {
   if (arr && arr.length)
     return uniq(arr.map((x) => normalizeIngredient(x?.text ?? '')).filter(Boolean));
 
   if (!text) return [];
-  const pre = text.replace(/[()]/g, ','); // helps split “(canola, soybean)”
+  const pre = text.replace(/[()]/g, ',');         // split inner sub-ingredients
   return uniq(pre.split(/[,\[\];]+/).map(normalizeIngredient).filter(Boolean));
 }
 
-function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-
 /**
- * Matching:
- * 1) exact or whole-word boundary;
- * 2) if no hit, safe partial (length >= PARTIAL_TOKEN_MIN_LEN).
+ * STRICT matching:
+ *   - Try every compiled pattern (whole phrase / word-boundary)
+ *   - No general substring fallback (unless term is compiled to allow hyphen/space or E-number forms)
  */
-function findTermHit(ingredients, terms) {
-  for (const t of terms) {
-    const needle = t.toLowerCase().trim();
-    if (!needle) continue;
-
-    const boundary = new RegExp(`\\b${escapeRegex(needle)}\\b`);
-    for (const ing of ingredients) {
-      if (ing === needle || boundary.test(ing)) return needle;
-    }
-
-    if (needle.length >= PARTIAL_TOKEN_MIN_LEN) {
-      for (const ing of ingredients) {
-        if (ing.includes(needle)) return needle;
+function findStrictHit(ingredients, entry) {
+  for (const ing of ingredients) {
+    for (const rx of entry.patterns) {
+      if (rx.test(ing)) {
+        return ing.match(rx)?.[0] ?? entry.name; // return matched span
       }
     }
   }
@@ -406,8 +433,8 @@ function findTermHit(ingredients, terms) {
 function matchIngredients(ingredients, avoid) {
   const lvl2 = [], lvl3 = [];
   for (const entry of avoid) {
-    if (!entry || !entry.terms || !entry.level) continue;
-    const hit = findTermHit(ingredients, entry.terms);
+    if (!entry || !entry.patterns?.length || !entry.level) continue;
+    const hit = findStrictHit(ingredients, entry);
     if (hit) (entry.level === 3 ? lvl3 : lvl2).push({ term: hit, name: entry.name });
   }
   return { lvl2, lvl3 };
@@ -425,7 +452,7 @@ function renderWarnings(matches) {
     }
     items.forEach((m) => {
       const li = document.createElement('li');
-      li.textContent = m.term; // show matched term only
+      li.textContent = m.term; // show matched span only
       ul.appendChild(li);
     });
   };
@@ -477,7 +504,6 @@ async function fetchAndDisplayProduct(barcode) {
 window.startCameraApp = async function () {
   try {
     await openStream(true);
-
     const canNativeRetail = await hasNativeRetailSupport();
     const okNative = canNativeRetail ? await startNativeScan() : false;
     if (!okNative) await startZXingScan();
