@@ -47,10 +47,11 @@ let nativeStarted = false;               // remember if native scanner is active
 let zxLoaded = false;                    // remember if ZXing UMD loaded successfully
 
 /* -------- Helpers -------- */
+
 const isSecure =
   location.protocol === 'https:' ||
   location.hostname === 'localhost' ||
-  location.hostname === '127.0.0.1';
+  location.hostname === '127.0.0.1'
 
 const isIOS =
   /iPad|iPhone|iPod/.test(navigator.userAgent) ||
