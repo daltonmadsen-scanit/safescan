@@ -24,11 +24,9 @@
   </style>
 
   <!-- ZXing UMD bundle (Option A): load BEFORE your app script -->
-  <script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js"
-          crossorigin="anonymous"></script>
+  https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js</script>
   <!-- (Optional extra redundancy)
-  <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"
-          crossorigin="anonymous"></script>
+  https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js</script>
   -->
 </head>
 <body>
@@ -75,7 +73,10 @@
     </section>
   </div>
 
-  <!-- Self-test & safety net: show iOS "Start Camera" if main script hasn't done it yet -->
+  <!-- Self-test & safety net:
+       - Confirms inline JS runs (status shows "inline OK")
+       - Ensures the Start Camera button is visible
+       - Calls the REAL app starter (window.startCameraApp) so the preview actually starts -->
   <script>
     (function () {
       const statusEl = document.getElementById('camera-status');
@@ -94,18 +95,13 @@
         }
 
         tapStart.onclick = async () => {
-          if (statusEl) statusEl.textContent = 'Requesting camera… (fallback)';
-          try {
-            if (!navigator.mediaDevices?.getUserMedia) {
-              statusEl.textContent = 'getUserMedia() not supported in this browser.';
-              return;
-            }
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-            statusEl.textContent = 'Camera permission GRANTED (fallback). Closing test stream…';
-            stream.getTracks().forEach(t => t.stop());
-          } catch (e) {
-            // Common errors: NotAllowedError (denied), SecurityError (not HTTPS/localhost)
-            statusEl.textContent = 'Camera error (fallback): ' + (e.name || e.message);
+          statusEl.textContent = 'Starting camera…';
+          // Call the REAL app camera starter exposed by script.js
+          if (typeof window.startCameraApp === 'function') {
+            try { await window.startCameraApp(); }
+            catch (e) { statusEl.textContent = 'Camera error: ' + (e.name || e.message || e); }
+          } else {
+            statusEl.textContent = 'App starter not found. Check that script.js loaded.';
           }
         };
       }, 800);
@@ -113,6 +109,6 @@
   </script>
 
   <!-- Your application script (cache-busted to force updates) -->
-  <script src="script.js?v=20260118-fix"></script>
+  script.js?v=20260117-native-fix</script>
 </body>
 </html>
