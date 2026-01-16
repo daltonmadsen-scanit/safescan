@@ -16,7 +16,7 @@ const els = {
   tapStart: byId('tapStart'),
   resName: byId('res-name'),
   resBrand: byId('res-brand'),
-  resBarcode: by('res-barcode'),
+  resBarcode: byId('res-barcode'),   // <-- fixed (was by(...) in an earlier draft)
   resIngredients: byId('res-ingredients'),
   resLvl2: byId('res-lvl2'),
   resLvl3: byId('res-lvl3'),
@@ -333,7 +333,6 @@ function matchIngredients(ingredients, avoid) {
 function renderWarnings(matches) {
   const { lvl2, lvl3 } = matches;
 
-  // Helper to set lists with JUST the matched term
   const setList = (ul, items, noneText) => {
     if (!ul) return;
     ul.innerHTML = '';
@@ -348,11 +347,9 @@ function renderWarnings(matches) {
     });
   };
 
-  // Set Level 3 and Level 2 warning lists
   setList(els.resLvl3, lvl3, 'None');
   setList(els.resLvl2, lvl2, 'None');
 
-  // OK section shows only if no matches anywhere
   if (els.resOK) {
     els.resOK.innerHTML = (!lvl2.length && !lvl3.length)
       ? '<li>No flagged ingredients detected</li>'
@@ -376,7 +373,6 @@ async function fetchAndDisplayProduct(barcode) {
     const ingArr = Array.isArray(p.ingredients) ? p.ingredients : [];
     const ingredientsList = buildIngredientsList(ingTxt, ingArr);
 
-    // Keep showing product info & full ingredient string as before
     els.resName.textContent = name ?? '—';
     els.resBrand.textContent = brand ?? '—';
     els.resBarcode.textContent = barcode ?? '—';
