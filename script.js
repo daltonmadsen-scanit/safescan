@@ -1,7 +1,7 @@
 
 /* ============================================================================
    SafeScan – Auto camera + Auto scan + Auto populate (native + ZXing fallback)
-   With tokenized partial matching for ingredients ↔ avoid list
+   Token expansion from avoid list + always-on tokenized partial matching
    ============================================================================ */
 
 /* -------- DOM -------- */
@@ -24,6 +24,10 @@ const els = {
 /* -------- Config -------- */
 const AUTO_STOP_AFTER_DECODE = true; // set to false to keep scanning
 const SCAN_INTERVAL_MS = 200;
+
+// Matching thresholds
+const TERM_TOKEN_MIN_LEN = 5;     // tokens added from avoid entries must be ≥ 5 chars
+const PARTIAL_TOKEN_MIN_LEN = 5;  // partial includes() allowed for terms ≥ 5 chars
 
 /* -------- State -------- */
 let currentStream = null;
@@ -55,11 +59,37 @@ function setStatus(msg, isError = false) {
 }
 
 /* -------- Avoid list -------- */
+/** Tokenize a string into long tokens, preserving parentheses content as tokens */
+function tokenizeForTerms(str) {
+  if (!str) return [];
+  // Keep text but drop parentheses characters themselves (not their content)
+  const keep = String(str).toLowerCase().replace(/[()]/g, ' ');
+  // Split on non-alphanumeric boundaries
+  const tokens = keep.split(/[^a-z0-9]+/).filter(Boolean);
+  // Keep only long-enough tokens to avoid noise
+  return tokens.filter(t => t.length >= TERM_TOKEN_MIN_LEN);
+}
+
+/** Normalize an avoid-list entry and enrich with tokens from name/synonyms */
 function normalizeAvoid(raw) {
   const name = String(raw?.name ?? raw?.term ?? '').trim().toLowerCase();
   const level = Number(raw?.level ?? raw?.severity ?? 0);
   const synonyms = Array.isArray(raw?.synonyms) ? raw.synonyms : [];
-  const terms = [name, ...synonyms].filter(Boolean).map((t) => t.toLowerCase());
+
+  // Base terms straight from name+synonyms
+  const baseTerms = [name, ...synonyms].filter(Boolean).map(t => t.toLowerCase());
+
+  // Expand tokens (captures inner words like "semolina" from "Wheat (semolina)")
+  const expandedTokens = new Set();
+  for (const s of [raw?.name, ...(synonyms ?? [])]) {
+    tokenizeForTerms(s).forEach(tok => expandedTokens.add(tok));
+  }
+
+  // Merge into unique terms
+  const termSet = new Set(baseTerms);
+  expandedTokens.forEach(tok => termSet.add(tok));
+  const terms = Array.from(termSet).filter(Boolean);
+
   return { name, level, terms };
 }
 
@@ -71,6 +101,7 @@ async function loadAvoidList() {
     setStatus(`Avoid list loaded (${avoidList.length} items).`);
   } catch {
     avoidList = [];
+    setStatus('Avoid list failed to load.', true);
   }
 }
 
@@ -91,7 +122,6 @@ async function openStream(preferBack = true, deviceId = null) {
     stream.getTracks().forEach((t) => t.stop());
     throw new Error('No video tracks returned.');
   }
-  // Attach
   if (currentStream) currentStream.getTracks().forEach((t) => t.stop());
   currentStream = stream;
   try {
@@ -103,11 +133,7 @@ async function openStream(preferBack = true, deviceId = null) {
   els.video.setAttribute('playsinline', 'true');
   els.video.setAttribute('autoplay', 'true');
   els.video.muted = true;
-  try {
-    await els.video.play();
-  } catch {
-    /* iOS will start after tap */
-  }
+  try { await els.video.play(); } catch { /* iOS may require user gesture */ }
 }
 
 /* -------- Scanner: native fast-path -------- */
@@ -116,7 +142,8 @@ async function startNativeScan() {
   try {
     barcodeDetector = new BarcodeDetector({
       formats: [
-        'ean_13','ean_8','upc_a','upc_e','code_128','code_39','qr_code','itf','codabar','data_matrix','pdf417','aztec'
+        'ean_13','ean_8','upc_a','upc_e','code_128','code_39',
+        'qr_code','itf','codabar','data_matrix','pdf417','aztec'
       ]
     });
   } catch {
@@ -156,9 +183,7 @@ async function startNativeScan() {
 
 /* -------- Scanner: ZXing fallback -------- */
 async function startZXingScan() {
-  // Guard: must use ZXingBrowser (UMD global)
   if (!window.ZXingBrowser || !ZXingBrowser.BrowserMultiFormatReader) {
-    // Try dynamic load as a safety net
     await loadZXingUMD();
     if (!window.ZXingBrowser || !ZXingBrowser.BrowserMultiFormatReader) {
       setStatus('ZXing not loaded. Check the script tag order.', true);
@@ -207,7 +232,7 @@ function loadZXingUMD() {
     s.src = 'https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js';
     s.crossOrigin = 'anonymous';
     s.onload = () => resolve();
-    s.onerror = () => resolve(); // resolve anyway; caller will re-check
+    s.onerror = () => resolve();
     document.head.appendChild(s);
   });
 }
@@ -237,32 +262,26 @@ function buildIngredientsList(text, arr) {
 
 function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
-/* ========= MATCHING (updated) =========
-   Exact/Boundary first, then tokenized partial matching for long tokens.
-   - minPartialLen default: 5 (tunable)
-   - Example:
-       avoid term: "semolina wheat"
-       ingredient: "semolina"
-       -> will match via token "semolina" (length >= 5)
-======================================== */
-function findTermHit(ingredients, terms, minPartialLen = 5) {
+/* ========= MATCHING (always-on partial + token expansion) =========
+   1) Exact or whole-word boundary
+   2) If no hit, allow substring match for terms with length ≥ PARTIAL_TOKEN_MIN_LEN
+   Terms include tokens extracted from avoid entries (e.g., "Wheat (semolina)" → "semolina")
+==================================================================== */
+function findTermHit(ingredients, terms) {
   for (const t of terms) {
     const needle = t.toLowerCase().trim();
     if (!needle) continue;
 
-    // 1) exact or whole-word boundary (original behavior)
+    // 1) exact or whole-word boundary
     const boundary = new RegExp(`\\b${escapeRegex(needle)}\\b`);
     for (const ing of ingredients) {
       if (ing === needle || boundary.test(ing)) return needle;
     }
 
-    // 2) tokenized partial: split avoid term into tokens and allow a match
-    //    when any long-enough token is contained in the ingredient
-    const tokens = needle.split(/\s+/).filter(Boolean);
-    const longTokens = tokens.filter(tok => tok.length >= minPartialLen);
-    if (longTokens.length) {
+    // 2) safe partial: only if the term is long enough
+    if (needle.length >= PARTIAL_TOKEN_MIN_LEN) {
       for (const ing of ingredients) {
-        if (longTokens.some(tok => ing.includes(tok))) return needle; // or return the matching token
+        if (ing.includes(needle)) return needle;
       }
     }
   }
@@ -271,11 +290,9 @@ function findTermHit(ingredients, terms, minPartialLen = 5) {
 
 function matchIngredients(ingredients, avoid) {
   const lvl2 = [], lvl3 = [];
-  const minPartialLen = 5; // tune if needed (≥ 5 recommended)
-
   for (const entry of avoid) {
     if (!entry || !entry.terms || !entry.level) continue;
-    const hit = findTermHit(ingredients, entry.terms, minPartialLen);
+    const hit = findTermHit(ingredients, entry.terms);
     if (hit) (entry.level === 3 ? lvl3 : lvl2).push({ term: hit, name: entry.name });
   }
   return { lvl2, lvl3 };
@@ -294,6 +311,7 @@ function renderWarnings(productName, matches) {
   if (els.resOK) els.resOK.innerHTML = (!lvl2.length && !lvl3.length) ? '<li>No Level 2 or Level 3 ingredients detected</li>' : '<li>—</li>';
 }
 
+/* -------- Product fetch -------- */
 async function fetchAndDisplayProduct(barcode) {
   setStatus(`Looking up ${barcode}…`);
   const base = 'https://world.openfoodfacts.org/api/v2/product/';
@@ -308,10 +326,12 @@ async function fetchAndDisplayProduct(barcode) {
     const ingTxt = (p.ingredients_text ?? '').trim();
     const ingArr = Array.isArray(p.ingredients) ? p.ingredients : [];
     const ingredientsList = buildIngredientsList(ingTxt, ingArr);
+
     els.resName.textContent = name ?? '—';
     els.resBrand.textContent = brand ?? '—';
     els.resBarcode.textContent = barcode ?? '—';
     els.resIngredients.textContent = (ingredientsList.join(', ') || '—');
+
     const matches = matchIngredients(ingredientsList, avoidList);
     renderWarnings(name, matches);
     setStatus('Ingredients loaded. Matches evaluated.');
@@ -334,10 +354,11 @@ async function boot() {
     return;
   }
   await loadAvoidList();
+
   if (isIOS) {
-    els.tapPrompt.style.display = 'flex';
+    els.tapPrompt?.style && (els.tapPrompt.style.display = 'flex');
     const onceStart = async () => {
-      els.tapPrompt.style.display = 'none';
+      if (els.tapPrompt?.style) els.tapPrompt.style.display = 'none';
       try {
         await openStream(true);
         const okNative = await startNativeScan();
@@ -346,7 +367,7 @@ async function boot() {
         setStatus(`Camera error: ${e?.name ?? e}`, true);
       }
     };
-    els.tapStart.addEventListener('click', onceStart, { once: true });
+    els.tapStart?.addEventListener('click', onceStart, { once: true });
   } else {
     try {
       await openStream(true);
@@ -358,4 +379,3 @@ async function boot() {
   }
 }
 document.addEventListener('DOMContentLoaded', boot);
-``
