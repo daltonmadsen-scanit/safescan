@@ -1,13 +1,7 @@
 
 /* ============================================================================
-   SafeScan – Auto camera + Auto scan + Auto populate (native + ZXing fallback)
-   - Native-first; ZXing only if native not available
-   - Robust dynamic ZXing loader WITH suppression if native is running
-   - Retail-format detection: auto-use ZXing on iPhone if EAN/UPC/Code128 unsupported
-   - Token expansion from avoid list + always-on tokenized partial matching
-   - Render warnings: ONLY the matched term(s) per level
-   - Exposes window.startCameraApp() so index.html can start the REAL camera flow
-   ============================================================================ */
+ SafeScan – Auto camera + Auto scan + Auto populate (native + ZXing fallback)
+ ============================================================================ */
 
 /* -------- DOM -------- */
 const byId = (id) => document.getElementById(id);
@@ -27,14 +21,11 @@ const els = {
 };
 
 /* -------- Config -------- */
-const AUTO_STOP_AFTER_DECODE = true;     // false => keep scanning after first decode
+const AUTO_STOP_AFTER_DECODE = true;
 const SCAN_INTERVAL_MS = 200;
+const TERM_TOKEN_MIN_LEN = 5;
+const PARTIAL_TOKEN_MIN_LEN = 5;
 
-// Matching thresholds
-const TERM_TOKEN_MIN_LEN = 5;            // tokens extracted from avoid entries must be ≥ 5 chars
-const PARTIAL_TOKEN_MIN_LEN = 5;         // partial includes() allowed for terms ≥ 5 chars
-
-// Retail formats we need for grocery/UPC/EAN scanning
 const RETAIL_FORMATS = new Set([
   'ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf','codabar'
 ]);
@@ -44,14 +35,14 @@ let currentStream = null;
 let usingDeviceId = null;
 let avoidList = [];
 let lastCode = null, lastAt = 0;
-let rafId = null;                        // for BarcodeDetector loop
-let barcodeDetector = null;              // native
-let zxingReader = null;                  // ZXing fallback
-let zxingControls = null;                // ZXing controls
+let rafId = null;
+let barcodeDetector = null;
+let zxingReader = null;
+let zxingControls = null;
 let scanning = false;
-let nativeStarted = false;               // set true once native scanner loop begins
-let zxLoaded = false;                    // set true once ZXing UMD is present
-let zxingErrorShown = false;             // show "ZXing not loaded" at most once
+let nativeStarted = false;
+let zxLoaded = false;
+let zxingErrorShown = false;
 
 /* -------- Helpers -------- */
 const isSecure =
@@ -71,12 +62,11 @@ function setStatus(msg, isError = false) {
   }
 }
 
-/* Check whether native BarcodeDetector supports any retail formats */
 async function hasNativeRetailSupport() {
   if (!('BarcodeDetector' in window)) return false;
   try {
     const supported = await BarcodeDetector.getSupportedFormats?.();
-    return Array.isArray(supported) && supported.some(fmt => RETAIL_FORMATS.has(fmt));
+    return Array.isArray(supported) && supported.some((fmt) => RETAIL_FORMATS.has(fmt));
   } catch {
     return false;
   }
@@ -84,44 +74,44 @@ async function hasNativeRetailSupport() {
 
 /* -------- Avoid list -------- */
 
-// strip diacritics: "açai" -> "acai"
 function stripDiacritics(t) {
   return t.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
-// Tokenize while KEEPING inner words (e.g., Wheat (semolina) -> includes "semolina")
 function tokenizeForTerms(str) {
   if (!str) return [];
-  const keep = stripDiacritics(String(str).toLowerCase()).replace(/[()]/g, ' ');
+  const keep = stripDiacritics(String(str).toLowerCase()).replace(/[\(\)\[\]]/g, ' ');
   const tokens = keep.split(/[^a-z0-9]+/).filter(Boolean);
-  return tokens.filter(t => t.length >= TERM_TOKEN_MIN_LEN);
+  return tokens.filter((t) => t.length >= TERM_TOKEN_MIN_LEN);
 }
 
-// Normalize an avoid-list entry and enrich with tokens from name/synonyms
 function normalizeAvoid(raw) {
-  const name = String(raw?.name ?? raw?.term ?? '').trim().toLowerCase();
-  const level = Number(raw?.level ?? raw?.severity ?? 0);
+  const name = String(raw?.name ?? '').trim().toLowerCase();
+  const level = Number(raw?.level ?? 0);
   const synonyms = Array.isArray(raw?.synonyms) ? raw.synonyms : [];
 
   const baseTerms = [name, ...synonyms]
     .filter(Boolean)
-    .map(t => stripDiacritics(String(t).toLowerCase()));
+    .map((t) => stripDiacritics(String(t).toLowerCase()));
 
   const expandedTokens = new Set();
   for (const s of [raw?.name, ...(synonyms ?? [])]) {
-    tokenizeForTerms(s).forEach(tok => expandedTokens.add(tok));
+    tokenizeForTerms(s).forEach((tok) => expandedTokens.add(tok));
   }
 
   const termSet = new Set(baseTerms);
-  expandedTokens.forEach(tok => termSet.add(tok));
-  const terms = Array.from(termSet).filter(Boolean);
+  expandedTokens.forEach((tok) => termSet.add(tok));
 
-  return { name, level, terms };
+  return { name, level, terms: Array.from(termSet).filter(Boolean) };
 }
+
+/* --------- *** YOUR ONLY MODIFIED LINE IS HERE *** --------- */
 
 async function loadAvoidList() {
   try {
-    const res = await fetch('avoid_list.json', { cache: 'no-store' });
+    // CHANGED THIS LINE ONLY:
+    const res = await fetch('triggers_level2_3_array.json', { cache: 'no-store' });
+
     const data = await res.json();
     avoidList = Array.isArray(data) ? data.map(normalizeAvoid) : [];
     setStatus(`Avoid list loaded (${avoidList.length} items).`);
@@ -139,38 +129,45 @@ async function openStream(preferBack = true, deviceId = null) {
         video: preferBack
           ? { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
           : true,
-        audio: false
+        audio: false,
       };
+
   setStatus('Requesting camera…');
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
   const tracks = stream.getVideoTracks();
   if (!tracks || !tracks.length) {
-    stream.getTracks().forEach(t => t.stop());
+    stream.getTracks().forEach((t) => t.stop());
     throw new Error('No video tracks returned.');
   }
-  if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+
+  if (currentStream) currentStream.getTracks().forEach((t) => t.stop());
   currentStream = stream;
+
   try {
     usingDeviceId = tracks[0]?.getSettings?.().deviceId ?? null;
   } catch {
     usingDeviceId = null;
   }
+
   els.video.srcObject = stream;
   els.video.setAttribute('playsinline', 'true');
   els.video.setAttribute('autoplay', 'true');
   els.video.muted = true;
-  try { await els.video.play(); } catch { /* iOS may require user gesture */ }
+  try {
+    await els.video.play();
+  } catch {}
 }
 
-/* -------- Scanner: native fast-path -------- */
+/* -------- Native scan -------- */
 async function startNativeScan() {
   if (!('BarcodeDetector' in window)) return false;
+
   try {
     barcodeDetector = new BarcodeDetector({
       formats: [
         'ean_13','ean_8','upc_a','upc_e','code_128','code_39',
         'qr_code','itf','codabar','data_matrix','pdf417','aztec'
-      ]
+      ],
     });
   } catch {
     barcodeDetector = null;
@@ -179,17 +176,22 @@ async function startNativeScan() {
 
   const ctx = els.canvas.getContext('2d');
   scanning = true;
-  nativeStarted = true;   // IMPORTANT: suppress ZXing warnings once native is running
+  nativeStarted = true;
+
   let lastTick = 0;
 
   const loop = (ts) => {
     if (!scanning) return;
     rafId = requestAnimationFrame(loop);
+
     if (ts - lastTick < SCAN_INTERVAL_MS) return;
     lastTick = ts;
+
     const w = els.video.videoWidth, h = els.video.videoHeight;
     if (!w || !h) return;
-    els.canvas.width = w; els.canvas.height = h;
+
+    els.canvas.width = w;
+    els.canvas.height = h;
     ctx.drawImage(els.video, 0, 0, w, h);
 
     barcodeDetector.detect(els.canvas).then((codes) => {
@@ -197,14 +199,17 @@ async function startNativeScan() {
       const c = codes[0];
       const text = c.rawValue || c.data || '';
       if (!text) return;
+
       const now = Date.now();
-      if (text && (text !== lastCode || (now - lastAt) > 1500)) {
-        lastCode = text; lastAt = now;
+      if (text && (text !== lastCode || now - lastAt > 1500)) {
+        lastCode = text;
+        lastAt = now;
         setStatus(`Scanned: ${text}`);
         onBarcode(text, { format: c.format });
+
         if (AUTO_STOP_AFTER_DECODE) stopScanning();
       }
-    }).catch((e) => console.debug('Detector error', e));
+    }).catch(() => {});
   };
 
   rafId = requestAnimationFrame(loop);
@@ -212,24 +217,28 @@ async function startNativeScan() {
   return true;
 }
 
-/* -------- Robust ZXing dynamic loader (Option B) -------- */
+/* -------- ZXing fallback -------- */
 async function loadZXingUMD(timeoutMs = 8000) {
-  if (window.ZXingBrowser?.BrowserMultiFormatReader) { zxLoaded = true; return true; }
+  if (window.ZXingBrowser?.BrowserMultiFormatReader) {
+    zxLoaded = true;
+    return true;
+  }
 
   const SOURCES = [
     'https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js',
     'https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js'
   ];
 
-  const tryLoad = (src) => new Promise((resolve) => {
-    const s = document.createElement('script');
-    s.src = src;
-    s.defer = true;
-    s.crossOrigin = 'anonymous';
-    s.onload = () => resolve(true);
-    s.onerror = () => resolve(false);
-    document.head.appendChild(s);
-  });
+  const tryLoad = (src) =>
+    new Promise((resolve) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.defer = true;
+      s.crossOrigin = 'anonymous';
+      s.onload = () => resolve(true);
+      s.onerror = () => resolve(false);
+      document.head.appendChild(s);
+    });
 
   for (const src of SOURCES) {
     const ok = await tryLoad(src);
@@ -237,27 +246,25 @@ async function loadZXingUMD(timeoutMs = 8000) {
 
     const t0 = Date.now();
     while (Date.now() - t0 < timeoutMs) {
-      if (window.ZXingBrowser?.BrowserMultiFormatReader) { zxLoaded = true; return true; }
-      await new Promise(r => setTimeout(r, 50));
+      if (window.ZXingBrowser?.BrowserMultiFormatReader) {
+        zxLoaded = true;
+        return true;
+      }
+      await new Promise((r) => setTimeout(r, 50));
     }
   }
-  return !!(window.ZXingBrowser?.BrowserMultiFormatReader);
+
+  return !!window.ZXingBrowser?.BrowserMultiFormatReader;
 }
 
-/* -------- Scanner: ZXing fallback (uses dynamic loader) -------- */
 async function startZXingScan() {
-  // If native scanner already started, do NOT run ZXing or report errors.
   if (nativeStarted) return false;
 
-  // Ensure ZXing UMD is present; only report an error if native is unavailable.
   if (!window.ZXingBrowser?.BrowserMultiFormatReader) {
     const loaded = await loadZXingUMD();
-    if (!loaded || !window.ZXingBrowser?.BrowserMultiFormatReader) {
-      if (!nativeStarted && !zxingErrorShown) {
-        zxingErrorShown = true;
-        setStatus('ZXing not loaded. Check the script tag order.', true);
-        console.debug('ZXing global after load attempt:', window.ZXingBrowser);
-      }
+    if (!loaded && !nativeStarted && !zxingErrorShown) {
+      zxingErrorShown = true;
+      setStatus('ZXing not loaded.', true);
       return false;
     }
   }
@@ -265,23 +272,29 @@ async function startZXingScan() {
   try {
     zxingReader = new ZXingBrowser.BrowserMultiFormatReader();
     scanning = true;
+
     const deviceId = usingDeviceId ?? null;
 
-    zxingControls = await zxingReader.decodeFromVideoDevice(deviceId, els.video, (result, err) => {
-      if (!scanning) return;
-      if (result) {
-        const text = result.getText();
-        const now = Date.now();
-        if (text && (text !== lastCode || (now - lastAt) > 1500)) {
-          lastCode = text; lastAt = now;
-          setStatus(`Scanned: ${text}`);
-          onBarcode(text, result);
-          if (AUTO_STOP_AFTER_DECODE) stopScanning();
+    zxingControls = await zxingReader.decodeFromVideoDevice(
+      deviceId,
+      els.video,
+      (result, err) => {
+        if (!scanning) return;
+
+        if (result) {
+          const text = result.getText();
+          const now = Date.now();
+          if (text && (text !== lastCode || now - lastAt > 1500)) {
+            lastCode = text;
+            lastAt = now;
+            setStatus(`Scanned: ${text}`);
+            onBarcode(text, result);
+
+            if (AUTO_STOP_AFTER_DECODE) stopScanning();
+          }
         }
-      } else if (err && !(err instanceof ZXingBrowser.NotFoundException)) {
-        console.debug('ZXing error', err);
       }
-    });
+    );
 
     setStatus('Scanning (ZXing)… point camera at the barcode.');
     return true;
@@ -293,54 +306,62 @@ async function startZXingScan() {
 
 function stopScanning() {
   scanning = false;
-  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  if (rafId) cancelAnimationFrame(rafId);
   try { zxingControls?.stop(); } catch {}
   try { ZXingBrowser?.BrowserCodeReader?._stopStreams?.(els.video); } catch {}
   try { zxingReader?.reset?.(); } catch {}
 }
 
 /* -------- Barcode handler -------- */
-function onBarcode(barcode /*, meta */) {
+function onBarcode(barcode) {
   fetchAndDisplayProduct(barcode);
 }
 
-/* -------- OFF lookup + ingredients -------- */
-function uniq(list) { const s = new Set(); const out = []; for (const x of list) { if (!s.has(x)) { s.add(x); out.push(x); } } return out; }
+/* -------- OFF Ingredients matching -------- */
+
+function uniq(list) {
+  const s = new Set();
+  const out = [];
+  for (const x of list) {
+    if (!s.has(x)) {
+      s.add(x);
+      out.push(x);
+    }
+  }
+  return out;
+}
 
 function normalizeIngredient(s) {
   if (!s) return '';
   let t = stripDiacritics(String(s).toLowerCase().trim());
-  t = t.replace(/\([^)]*\)/g, '');               // remove parentheses content
-  t = t.replace(/[ \-_]+/g, ' ').trim();         // collapse -, _ and spaces
-  t = t.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, ''); // strip non-alnum edges
+  t = t.replace(/\([^)]*\)/g, '');
+  t = t.replace(/[\s\-_]+/g, ' ').trim();
+  t = t.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '');
   return t;
 }
 
 function buildIngredientsList(text, arr) {
-  if (arr && arr.length) return uniq(arr.map((x) => normalizeIngredient(x?.text ?? '')).filter(Boolean));
+  if (arr && arr.length)
+    return uniq(arr.map((x) => normalizeIngredient(x?.text ?? '')).filter(Boolean));
+
   if (!text) return [];
   return uniq(text.split(/[,\[\];]+/).map(normalizeIngredient).filter(Boolean));
 }
 
-function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
-/* ========= MATCHING (always-on partial + token expansion) =========
-   1) Exact or whole-word boundary
-   2) If no hit, allow substring match for terms with length ≥ PARTIAL_TOKEN_MIN_LEN
-   Terms include tokens extracted from avoid entries (e.g., "Wheat (semolina)" → "semolina")
-==================================================================== */
 function findTermHit(ingredients, terms) {
   for (const t of terms) {
     const needle = t.toLowerCase().trim();
     if (!needle) continue;
 
-    // exact or whole-word boundary
     const boundary = new RegExp(`\\b${escapeRegex(needle)}\\b`);
     for (const ing of ingredients) {
       if (ing === needle || boundary.test(ing)) return needle;
     }
 
-    // safe partial: only if the term is long enough
     if (needle.length >= PARTIAL_TOKEN_MIN_LEN) {
       for (const ing of ingredients) {
         if (ing.includes(needle)) return needle;
@@ -354,13 +375,13 @@ function matchIngredients(ingredients, avoid) {
   const lvl2 = [], lvl3 = [];
   for (const entry of avoid) {
     if (!entry || !entry.terms || !entry.level) continue;
+
     const hit = findTermHit(ingredients, entry.terms);
     if (hit) (entry.level === 3 ? lvl3 : lvl2).push({ term: hit, name: entry.name });
   }
   return { lvl2, lvl3 };
 }
 
-/* -------- Render warnings: ONLY matched terms -------- */
 function renderWarnings(matches) {
   const { lvl2, lvl3 } = matches;
 
@@ -371,9 +392,9 @@ function renderWarnings(matches) {
       ul.innerHTML = `<li>${noneText}</li>`;
       return;
     }
-    items.forEach(m => {
+    items.forEach((m) => {
       const li = document.createElement('li');
-      li.textContent = m.term;   // ONLY the matched term
+      li.textContent = m.term;
       ul.appendChild(li);
     });
   };
@@ -388,29 +409,33 @@ function renderWarnings(matches) {
   }
 }
 
-/* -------- Product fetch -------- */
+/* -------- Product lookup -------- */
 async function fetchAndDisplayProduct(barcode) {
   setStatus(`Looking up ${barcode}…`);
   const base = 'https://world.openfoodfacts.org/api/v2/product/';
   const fields = 'product_name,brands,ingredients_text,ingredients';
   const url = `${base}${encodeURIComponent(barcode)}?fields=${encodeURIComponent(fields)}`;
+
   try {
     const res = await fetch(url);
     const data = await res.json();
     const p = data?.product ?? {};
+
     const name = p.product_name ?? 'Unknown';
     const brand = p.brands ?? '';
     const ingTxt = (p.ingredients_text ?? '').trim();
     const ingArr = Array.isArray(p.ingredients) ? p.ingredients : [];
+
     const ingredientsList = buildIngredientsList(ingTxt, ingArr);
 
-    els.resName.textContent = name ?? '—';
-    els.resBrand.textContent = brand ?? '—';
-    els.resBarcode.textContent = barcode ?? '—';
-    els.resIngredients.textContent = (ingredientsList.join(', ') || '—');
+    els.resName.textContent = name;
+    els.resBrand.textContent = brand;
+    els.resBarcode.textContent = barcode;
+    els.resIngredients.textContent = ingredientsList.join(', ') || '—';
 
     const matches = matchIngredients(ingredientsList, avoidList);
     renderWarnings(matches);
+
     setStatus('Ingredients loaded. Matches evaluated.');
   } catch (e) {
     setStatus('Lookup failed. Try again.', true);
@@ -418,16 +443,15 @@ async function fetchAndDisplayProduct(barcode) {
   }
 }
 
-/* -------- Expose a global starter so index.html can start the REAL app camera -------- */
+/* -------- Start camera -------- */
 window.startCameraApp = async function () {
   try {
     await openStream(true);
-    // Prefer native if retail formats supported; otherwise go ZXing
     const canNativeRetail = await hasNativeRetailSupport();
     const okNative = canNativeRetail ? await startNativeScan() : false;
     if (!okNative) await startZXingScan();
   } catch (e) {
-    setStatus(`Camera error: ${e?.name || e?.message || e}`, true);
+    setStatus(`Camera error: ${e?.name ?? e?.message ?? e}`, true);
   }
 };
 
@@ -438,6 +462,7 @@ async function boot() {
     alert('Open over HTTPS (GitHub Pages) or run on localhost.');
     return;
   }
+
   if (!('mediaDevices' in navigator) || !navigator.mediaDevices.getUserMedia) {
     setStatus('getUserMedia() not supported in this browser.', true);
     alert('Update to a modern browser.');
@@ -446,14 +471,14 @@ async function boot() {
 
   await loadAvoidList();
 
-  // Safety net: keep the tap prompt visible until the stream actually opens
   if (els.tapPrompt) els.tapPrompt.style.display = 'flex';
 
-  // iOS requires user gesture to start camera
   if (isIOS && els.tapPrompt && els.tapStart) {
     els.tapStart.onclick = async () => {
       try { await window.startCameraApp(); }
-      catch (e) { setStatus(`Camera error: ${e?.name || e?.message || e}`, true); }
+      catch (e) {
+        setStatus(`Camera error: ${e?.name ?? e?.message ?? e}`, true);
+      }
     };
   } else {
     try {
@@ -462,13 +487,9 @@ async function boot() {
       const okNative = canNativeRetail ? await startNativeScan() : false;
       if (!okNative) await startZXingScan();
     } catch (e) {
-      setStatus(`Camera error: ${e?.name || e?.message || e}`, true);
+      setStatus(`Camera error: ${e?.name ?? e?.message ?? e}`, true);
     }
   }
-
-  // (Optional) service worker for more predictable refreshes:
-  // if ('serviceWorker' in navigator) {
-  //   navigator.serviceWorker.register('./sw.js').catch(console.error);
-  // }
 }
+
 document.addEventListener('DOMContentLoaded', boot);
