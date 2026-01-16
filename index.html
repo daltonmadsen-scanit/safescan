@@ -5,7 +5,10 @@
   <meta charset="utf-8" />
   <title>SafeScan – Barcode & Ingredients</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <!-- Basic styles (optional, tweak as you like) -->
   <style>
+    :root { color-scheme: light dark; }
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 1rem; }
     header { margin-bottom: 1rem; }
     #camera-status { color: #444; margin: .5rem 0 1rem; }
@@ -19,6 +22,14 @@
       .grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
+
+  <!-- ZXing UMD bundle (Option A): load BEFORE your app script -->
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js"
+          crossorigin="anonymous"></script>
+  <!-- (Optional fallback CDN if you want extra redundancy)
+  <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"
+          crossorigin="anonymous"></script>
+  -->
 </head>
 <body>
   <header>
@@ -30,7 +41,7 @@
   <video id="preview" playsinline muted autoplay></video>
   <canvas id="snapshot" style="display:none;"></canvas>
 
-  <!-- iOS tap prompt -->
+  <!-- iOS tap prompt (required for user gesture before getUserMedia) -->
   <div id="tapPrompt">
     <div>
       <p>Safari on iOS requires a tap to start the camera.</p>
@@ -64,7 +75,7 @@
     </section>
   </div>
 
-  <!-- Your app script (cache-busted) -->
-  <script src="script.js?v=20260116-iphone-fix"></script>
+  <!-- Your application script (cache-busted to force updates) -->
+  <script src="script.js?v=20260116-optionA"></script>
 </body>
 </html>
