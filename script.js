@@ -1,7 +1,7 @@
 
 /* ============================================================================
    SafeScan – Auto camera + Auto scan + Auto populate (native + ZXing fallback)
-   - Robust dynamic ZXing loader (Option B)
+   - Robust dynamic ZXing loader (Option B) with suppression if native is running
    - Token expansion from avoid list + always-on tokenized partial matching
    - Render warnings: ONLY the matched term(s) per level
    ============================================================================ */
@@ -16,7 +16,7 @@ const els = {
   tapStart: byId('tapStart'),
   resName: byId('res-name'),
   resBrand: byId('res-brand'),
-  resBarcode: byId('res-barcode'),   // <-- fixed (was by(...) in an earlier draft)
+  resBarcode: byId('res-barcode'),
   resIngredients: byId('res-ingredients'),
   resLvl2: byId('res-lvl2'),
   resLvl3: byId('res-lvl3'),
@@ -24,7 +24,7 @@ const els = {
 };
 
 /* -------- Config -------- */
-const AUTO_STOP_AFTER_DECODE = true; // set to false to keep scanning
+const AUTO_STOP_AFTER_DECODE = true; // set to false to keep scanning after first decode
 const SCAN_INTERVAL_MS = 200;
 
 // Matching thresholds
@@ -36,11 +36,13 @@ let currentStream = null;
 let usingDeviceId = null;
 let avoidList = [];
 let lastCode = null, lastAt = 0;
-let rafId = null; // for BarcodeDetector
-let barcodeDetector = null; // native
-let zxingReader = null; // ZXing fallback
-let zxingControls = null; // ZXing controls
+let rafId = null;                 // for BarcodeDetector loop
+let barcodeDetector = null;       // native
+let zxingReader = null;           // ZXing fallback
+let zxingControls = null;         // ZXing controls
 let scanning = false;
+let nativeStarted = false;        // NEW: remember if native scanner is active
+let zxLoaded = false;             // NEW: remember if ZXing UMD loaded successfully
 
 /* -------- Helpers -------- */
 const isSecure =
@@ -157,9 +159,12 @@ async function startNativeScan() {
     barcodeDetector = null;
     return false;
   }
+
   const ctx = els.canvas.getContext('2d');
   scanning = true;
+  nativeStarted = true;   // mark native as active
   let lastTick = 0;
+
   const loop = (ts) => {
     if (!scanning) return;
     rafId = requestAnimationFrame(loop);
@@ -169,6 +174,7 @@ async function startNativeScan() {
     if (!w || !h) return;
     els.canvas.width = w; els.canvas.height = h;
     ctx.drawImage(els.video, 0, 0, w, h);
+
     barcodeDetector.detect(els.canvas).then((codes) => {
       if (!codes || !codes.length) return;
       const c = codes[0];
@@ -183,6 +189,7 @@ async function startNativeScan() {
       }
     }).catch((e) => console.debug('Detector error', e));
   };
+
   rafId = requestAnimationFrame(loop);
   setStatus('Scanning (native)… point camera at the barcode.');
   return true;
@@ -190,7 +197,7 @@ async function startNativeScan() {
 
 /* -------- Robust ZXing dynamic loader (Option B) -------- */
 async function loadZXingUMD(timeoutMs = 8000) {
-  if (window.ZXingBrowser?.BrowserMultiFormatReader) return true;
+  if (window.ZXingBrowser?.BrowserMultiFormatReader) { zxLoaded = true; return true; }
 
   const SOURCES = [
     'https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js',
@@ -213,7 +220,7 @@ async function loadZXingUMD(timeoutMs = 8000) {
 
     const t0 = Date.now();
     while (Date.now() - t0 < timeoutMs) {
-      if (window.ZXingBrowser?.BrowserMultiFormatReader) return true;
+      if (window.ZXingBrowser?.BrowserMultiFormatReader) { zxLoaded = true; return true; }
       await new Promise(r => setTimeout(r, 50));
     }
   }
@@ -222,11 +229,17 @@ async function loadZXingUMD(timeoutMs = 8000) {
 
 /* -------- Scanner: ZXing fallback (uses dynamic loader) -------- */
 async function startZXingScan() {
-  // Ensure ZXing UMD is present
+  // If native scanner already started, do NOT run ZXing or report errors.
+  if (nativeStarted) return false;
+
+  // Ensure ZXing UMD is present; only report an error if native is unavailable.
   if (!window.ZXingBrowser?.BrowserMultiFormatReader) {
     const loaded = await loadZXingUMD();
     if (!loaded || !window.ZXingBrowser?.BrowserMultiFormatReader) {
-      setStatus('ZXing not loaded. Check the script tag order.', true);
+      // Only a real error if native didn't start
+      if (!nativeStarted) {
+        setStatus('ZXing not loaded. Check the script tag order.', true);
+      }
       return false;
     }
   }
@@ -248,181 +261,3 @@ async function startZXingScan() {
           if (AUTO_STOP_AFTER_DECODE) stopScanning();
         }
       } else if (err && !(err instanceof ZXingBrowser.NotFoundException)) {
-        console.debug('ZXing error', err);
-      }
-    });
-
-    setStatus('Scanning (ZXing)… point camera at the barcode.');
-    return true;
-  } catch (e) {
-    setStatus(`ZXing start error: ${e?.message ?? e}`, true);
-    return false;
-  }
-}
-
-function stopScanning() {
-  scanning = false;
-  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-  try { zxingControls?.stop(); } catch {}
-  try { ZXingBrowser?.BrowserCodeReader?._stopStreams?.(els.video); } catch {}
-  try { zxingReader?.reset?.(); } catch {}
-}
-
-/* -------- Barcode handler -------- */
-function onBarcode(barcode /*, meta */) {
-  fetchAndDisplayProduct(barcode);
-}
-
-/* -------- OFF lookup + ingredients -------- */
-function uniq(list) { const s = new Set(); const out = []; for (const x of list) { if (!s.has(x)) { s.add(x); out.push(x); } } return out; }
-
-function normalizeIngredient(s) {
-  if (!s) return '';
-  let t = stripDiacritics(String(s).toLowerCase().trim());
-  t = t.replace(/\([^)]*\)/g, '');               // remove parentheses content
-  t = t.replace(/[ \-_]+/g, ' ').trim();         // collapse -, _ and spaces
-  t = t.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, ''); // strip non-alnum edges
-  return t;
-}
-
-function buildIngredientsList(text, arr) {
-  if (arr && arr.length) return uniq(arr.map((x) => normalizeIngredient(x?.text ?? '')).filter(Boolean));
-  if (!text) return [];
-  return uniq(text.split(/[,\[\];]+/).map(normalizeIngredient).filter(Boolean));
-}
-
-function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-
-/* ========= MATCHING (always-on partial + token expansion) =========
-   1) Exact or whole-word boundary
-   2) If no hit, allow substring match for terms with length ≥ PARTIAL_TOKEN_MIN_LEN
-   Terms include tokens extracted from avoid entries (e.g., "Wheat (semolina)" → "semolina")
-==================================================================== */
-function findTermHit(ingredients, terms) {
-  for (const t of terms) {
-    const needle = t.toLowerCase().trim();
-    if (!needle) continue;
-
-    // exact or whole-word boundary
-    const boundary = new RegExp(`\\b${escapeRegex(needle)}\\b`);
-    for (const ing of ingredients) {
-      if (ing === needle || boundary.test(ing)) return needle;
-    }
-
-    // safe partial: only if the term is long enough
-    if (needle.length >= PARTIAL_TOKEN_MIN_LEN) {
-      for (const ing of ingredients) {
-        if (ing.includes(needle)) return needle;
-      }
-    }
-  }
-  return null;
-}
-
-function matchIngredients(ingredients, avoid) {
-  const lvl2 = [], lvl3 = [];
-  for (const entry of avoid) {
-    if (!entry || !entry.terms || !entry.level) continue;
-    const hit = findTermHit(ingredients, entry.terms);
-    if (hit) (entry.level === 3 ? lvl3 : lvl2).push({ term: hit, name: entry.name });
-  }
-  return { lvl2, lvl3 };
-}
-
-/* -------- Render warnings: ONLY matched terms -------- */
-function renderWarnings(matches) {
-  const { lvl2, lvl3 } = matches;
-
-  const setList = (ul, items, noneText) => {
-    if (!ul) return;
-    ul.innerHTML = '';
-    if (!items.length) {
-      ul.innerHTML = `<li>${noneText}</li>`;
-      return;
-    }
-    items.forEach(m => {
-      const li = document.createElement('li');
-      li.textContent = m.term;   // ONLY the matched term
-      ul.appendChild(li);
-    });
-  };
-
-  setList(els.resLvl3, lvl3, 'None');
-  setList(els.resLvl2, lvl2, 'None');
-
-  if (els.resOK) {
-    els.resOK.innerHTML = (!lvl2.length && !lvl3.length)
-      ? '<li>No flagged ingredients detected</li>'
-      : '<li>—</li>';
-  }
-}
-
-/* -------- Product fetch -------- */
-async function fetchAndDisplayProduct(barcode) {
-  setStatus(`Looking up ${barcode}…`);
-  const base = 'https://world.openfoodfacts.org/api/v2/product/';
-  const fields = 'product_name,brands,ingredients_text,ingredients';
-  const url = `${base}${encodeURIComponent(barcode)}?fields=${encodeURIComponent(fields)}`;
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-    const p = data?.product ?? {};
-    const name = p.product_name ?? 'Unknown';
-    const brand = p.brands ?? '';
-    const ingTxt = (p.ingredients_text ?? '').trim();
-    const ingArr = Array.isArray(p.ingredients) ? p.ingredients : [];
-    const ingredientsList = buildIngredientsList(ingTxt, ingArr);
-
-    els.resName.textContent = name ?? '—';
-    els.resBrand.textContent = brand ?? '—';
-    els.resBarcode.textContent = barcode ?? '—';
-    els.resIngredients.textContent = (ingredientsList.join(', ') || '—');
-
-    const matches = matchIngredients(ingredientsList, avoidList);
-    renderWarnings(matches);
-    setStatus('Ingredients loaded. Matches evaluated.');
-  } catch (e) {
-    setStatus('Lookup failed. Try again.', true);
-    console.error('OFF fetch error:', e);
-  }
-}
-
-/* -------- Boot -------- */
-async function boot() {
-  if (!isSecure) {
-    setStatus('Camera requires HTTPS or localhost.', true);
-    alert('Open over HTTPS (GitHub Pages) or run on localhost.');
-    return;
-  }
-  if (!('mediaDevices' in navigator) || !navigator.mediaDevices.getUserMedia) {
-    setStatus('getUserMedia() not supported in this browser.', true);
-    alert('Update to a modern browser.');
-    return;
-  }
-  await loadAvoidList();
-
-  // iOS requires user gesture to start camera
-  if (isIOS && els.tapPrompt && els.tapStart) {
-    els.tapPrompt.style.display = 'flex';
-    const onceStart = async () => {
-      els.tapPrompt.style.display = 'none';
-      try {
-        await openStream(true);
-        const okNative = await startNativeScan();
-        if (!okNative) await startZXingScan();
-      } catch (e) {
-        setStatus(`Camera error: ${e?.name ?? e}`, true);
-      }
-    };
-    els.tapStart.addEventListener('click', onceStart, { once: true });
-  } else {
-    try {
-      await openStream(true);
-      const okNative = await startNativeScan();
-      if (!okNative) await startZXingScan();
-    } catch (e) {
-      setStatus(`Camera error: ${e?.name ?? e}`, true);
-    }
-  }
-}
-document.addEventListener('DOMContentLoaded', boot);
