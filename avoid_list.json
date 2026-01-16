@@ -1,776 +1,90 @@
+
 {
-  "source": "excel_v1.xlsx",
-  "generated_from_level": "LEVEL 3",
-  "items": [
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Anti-caking Agent]",
-      "item": "Aluminium Silicate",
-      "normalized": "aluminium silicate"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Anti-caking Agent]",
-      "item": "Calcium Gluconate",
-      "normalized": "calcium gluconate"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Anti-caking Agent]",
-      "item": "Stearic Acid",
-      "normalized": "stearic acid"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Coating]",
-      "item": "Zein",
-      "normalized": "zein"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Dairy]",
-      "item": "Cheese (almond)",
-      "normalized": "cheese"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Dairy]",
-      "item": "Cheese (asiago)",
-      "normalized": "cheese"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Dairy]",
-      "item": "Cheese (colby)",
-      "normalized": "cheese"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Dairy]",
-      "item": "Cheese (cotija)",
-      "normalized": "cheese"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Dairy]",
-      "item": "Cheese (havarti)",
-      "normalized": "cheese"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Dairy]",
-      "item": "Cheese (mascarpone)",
-      "normalized": "cheese"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Dairy]",
-      "item": "Cheese (stilton)",
-      "normalized": "cheese"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Dairy]",
-      "item": "Cheese (swiss)",
-      "normalized": "cheese"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Dairy]",
-      "item": "Cream",
-      "normalized": "cream"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fats]",
-      "item": "Avocado Oil",
-      "normalized": "avocado oil"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fats]",
-      "item": "Butter (salted)",
-      "normalized": "butter"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fats]",
-      "item": "Butter (unsalted)",
-      "normalized": "butter"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fats]",
-      "item": "Canola Oil",
-      "normalized": "canola oil"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fats]",
-      "item": "Ghee",
-      "normalized": "ghee"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fats]",
-      "item": "Peanut Oil",
-      "normalized": "peanut oil"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Flavor Enhancer]",
-      "item": "Calcium 5-ribonucleotide",
-      "normalized": "calcium 5 ribonucleotide"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Flavor Enhancer]",
-      "item": "Calcium Diglutamate",
-      "normalized": "calcium diglutamate"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Flavor Enhancer]",
-      "item": "Dicalcium Ionisate",
-      "normalized": "dicalcium ionisate"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fruits]",
-      "item": "Apple (cortland)",
-      "normalized": "apple"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fruits]",
-      "item": "Apple (honey crisp)",
-      "normalized": "apple"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fruits]",
-      "item": "Cherries",
-      "normalized": "cherries"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fruits]",
-      "item": "Feijoa",
-      "normalized": "feijoa"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fruits]",
-      "item": "Figs",
-      "normalized": "figs"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fruits]",
-      "item": "Grapefruit (white)",
-      "normalized": "grapefruit"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fruits]",
-      "item": "Mangosteen",
-      "normalized": "mangosteen"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fruits]",
-      "item": "Oranges (tangerines)",
-      "normalized": "oranges"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Fruits]",
-      "item": "Tomatillo",
-      "normalized": "tomatillo"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Grains]",
-      "item": "Buckwheat",
-      "normalized": "buckwheat"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Grains]",
-      "item": "Rice (jasmine)",
-      "normalized": "rice"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Grains]",
-      "item": "Rice (white)",
-      "normalized": "rice"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Grains]",
-      "item": "Rye",
-      "normalized": "rye"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Grains]",
-      "item": "Sago",
-      "normalized": "sago"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Grains]",
-      "item": "Triticale",
-      "normalized": "triticale"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Grains]",
-      "item": "Wheat (bulgur)",
-      "normalized": "wheat"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Grains]",
-      "item": "Wheat (semolina)",
-      "normalized": "wheat"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Legumes]",
-      "item": "Edamame",
-      "normalized": "edamame"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Legumes]",
-      "item": "Soybean Flour",
-      "normalized": "soybean flour"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Modified Starch]",
-      "item": "Monostarch Phosphate",
-      "normalized": "monostarch phosphate"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Mushrooms]",
-      "item": "Button",
-      "normalized": "button"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Mushrooms]",
-      "item": "Oyster",
-      "normalized": "oyster"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Nuts]",
-      "item": "Hemp",
-      "normalized": "hemp"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Nuts]",
-      "item": "Pistachio",
-      "normalized": "pistachio"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Nuts]",
-      "item": "Sunflower Seed",
-      "normalized": "sunflower seed"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Processing Aid]",
-      "item": "Calcium Sulphate",
-      "normalized": "calcium sulphate"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Processing Aid]",
-      "item": "Diastatic Malt Powder",
-      "normalized": "diastatic malt powder"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Protein]",
-      "item": "Beef Bone Broth",
-      "normalized": "beef bone broth"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Protein]",
-      "item": "Boar Pork (ground)",
-      "normalized": "boar pork"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Protein]",
-      "item": "Casein",
-      "normalized": "casein"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Protein]",
-      "item": "Chicken Dark",
-      "normalized": "chicken dark"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Protein]",
-      "item": "Tempeh",
-      "normalized": "tempeh"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Protein]",
-      "item": "Wagyu Beef (ground)",
-      "normalized": "wagyu beef"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Amberjack (lesser)",
-      "normalized": "amberjack"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Blue Mussels",
-      "normalized": "blue mussels"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Catfish (blue)",
-      "normalized": "catfish"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Clams (littleneck)",
-      "normalized": "clams"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Crab (blue)",
-      "normalized": "crab"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Crab (snow)",
-      "normalized": "crab"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Eel (japanese)",
-      "normalized": "eel"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Mackerel (spanish)",
-      "normalized": "mackerel"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Mahi-mahi",
-      "normalized": "mahi mahi"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Oysters (kumamoto)",
-      "normalized": "oysters"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Prawns (brown)",
-      "normalized": "prawns"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Sardines (pacific)",
-      "normalized": "sardines"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Scallops (atlantic)",
-      "normalized": "scallops"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Snapper (yellowtail)",
-      "normalized": "snapper"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Tilapia (nile)",
-      "normalized": "tilapia"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seafood]",
-      "item": "Trout (steelhead)",
-      "normalized": "trout"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seasoning]",
-      "item": "Harissa",
-      "normalized": "harissa"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seasoning]",
-      "item": "Miso",
-      "normalized": "miso"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seasoning]",
-      "item": "Salt (pink himalayan)",
-      "normalized": "salt"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Seasoning]",
-      "item": "Tamari",
-      "normalized": "tamari"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Spices]",
-      "item": "Caraway",
-      "normalized": "caraway"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Spices]",
-      "item": "Curry (red)",
-      "normalized": "curry"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Spices]",
-      "item": "Paprika",
-      "normalized": "paprika"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Spices]",
-      "item": "Pepper (red/cayenne)",
-      "normalized": "pepper"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Spices]",
-      "item": "Wasabi",
-      "normalized": "wasabi"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Stabilizer]",
-      "item": "Carboxymethyl Cellulose",
-      "normalized": "carboxymethyl cellulose"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Stabilizer]",
-      "item": "Potassium Chloride",
-      "normalized": "potassium chloride"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Superfood]",
-      "item": "Acai Berry",
-      "normalized": "acai berry"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Superfood]",
-      "item": "Coconut Oil",
-      "normalized": "coconut oil"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Superfood]",
-      "item": "Liver (beef)",
-      "normalized": "liver"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Superfood]",
-      "item": "Turmeric",
-      "normalized": "turmeric"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Sweetener]",
-      "item": "Brown Sugar (dark)",
-      "normalized": "brown sugar"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Sweetener]",
-      "item": "Lactitol",
-      "normalized": "lactitol"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Sweetener]",
-      "item": "Sodium Cyclamate",
-      "normalized": "sodium cyclamate"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Sweetener]",
-      "item": "Xylitol",
-      "normalized": "xylitol"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Thickening Agent]",
-      "item": "Calcium Malate",
-      "normalized": "calcium malate"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Thickening Agent]",
-      "item": "Carrageenan",
-      "normalized": "carrageenan"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Thickening Agent]",
-      "item": "Gum Arabic",
-      "normalized": "gum arabic"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Thickening Agent]",
-      "item": "Hydroxypropylcellulose",
-      "normalized": "hydroxypropylcellulose"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Thickening Agent]",
-      "item": "Locust Bean Gum, Carob Gum",
-      "normalized": "locust bean gum carob gum"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Thickening Agent]",
-      "item": "Methylcellulose",
-      "normalized": "methylcellulose"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Thickening Agent]",
-      "item": "Tara Meal",
-      "normalized": "tara meal"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Vegetables]",
-      "item": "Bok Choy (raw)",
-      "normalized": "bok choy"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Vegetables]",
-      "item": "Broccoli",
-      "normalized": "broccoli"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Vegetables]",
-      "item": "Broccoli (raw)",
-      "normalized": "broccoli"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Vegetables]",
-      "item": "Carrots",
-      "normalized": "carrots"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Vegetables]",
-      "item": "Cassava Flour",
-      "normalized": "cassava flour"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Vegetables]",
-      "item": "Collard Greens",
-      "normalized": "collard greens"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Vegetables]",
-      "item": "Habanero Pepper",
-      "normalized": "habanero pepper"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Vegetables]",
-      "item": "Horseradish",
-      "normalized": "horseradish"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Vegetables]",
-      "item": "Lettuce (raw romaine)",
-      "normalized": "lettuce"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Vegetables]",
-      "item": "Onions (scallions)",
-      "normalized": "onions"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Vegetables]",
-      "item": "Squash (spaghetti)",
-      "normalized": "squash"
-    },
-    {
-      "group": "FOOD INTOLERANCE",
-      "category": "[Vegetables]",
-      "item": "Watercress",
-      "normalized": "watercress"
+  "source": "excel_v1_w_concat_formatted.xlsx",
+  "generated_utc": "2026-01-16T03:19:35Z",
+  "levels": {
+    "INSIGNIFICANT": {
+      "items": [
+        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Aluminium Calcium Silicate", "normalized": "aluminium calcium silicate" },
+        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Calcium Silicate", "normalized": "calcium silicate" },
+        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Magnesium Oxide", "normalized": "magnesium oxide" },
+        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Magnesium Stearate", "normalized": "magnesium stearate" },
+        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Talc", "normalized": "talc" },
+        { "group": "FOOD INTOLERANCE", "category": "[Coating]", "item": "Bees Wax", "normalized": "bees wax" },
+        { "group": "FOOD INTOLERANCE", "category": "[Coating]", "item": "Candelilla Wax", "normalized": "candelilla wax" },
+        { "group": "FOOD INTOLERANCE", "category": "[Coating]", "item": "Carnauba Wax", "normalized": "carnauba wax" },
+        { "group": "FOOD INTOLERANCE", "category": "[Coating]", "item": "Ethylcellulose", "normalized": "ethylcellulose" },
+        { "group": "FOOD INTOLERANCE", "category": "[Coating]", "item": "Montanic Acid Ester", "normalized": "montanic acid ester" }
+        /* ... many more INSIGNIFICANT items continue ... */
+      ],
+      "match_keywords": [
+        "acesulfame k",
+        "acetylised di-starch phosphate",
+        "acorn",
+        "adzuki bean",
+        "agar",
+        "agave nectar"
+        /* ... continues with all distinct Item_Concat-derived keywords for INSIGNIFICANT ... */
+      ]
+    },
+    "LEVEL 1": {
+      "items": [
+        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Aluminium Potassium Silicate", "normalized": "aluminium potassium silicate" },
+        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Bentonite", "normalized": "bentonite" },
+        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Silica Gel", "normalized": "silica gel" }
+        /* ... remaining LEVEL 1 items ... */
+      ],
+      "match_keywords": [
+        "aluminium potassium silicate",
+        "bentonite",
+        "silica gel",
+        "edam cheese",
+        "manchego cheese"
+        /* ... all distinct Item_Concat-derived keywords for LEVEL 1 ... */
+      ]
+    },
+    "LEVEL 2": {
+      "items": [
+        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Glucono-o-lactone", "normalized": "glucono-o-lactone" },
+        { "group": "FOOD INTOLERANCE", "category": "[Dairy]", "item": "Cheese (brick)", "normalized": "cheese brick" }
+        /* ... remaining LEVEL 2 items ... */
+      ],
+      "match_keywords": [
+        "glucono-o-lactone",
+        "cheese brick",
+        "camembert cheese",
+        "cottage cheese"
+        /* ... all distinct Item_Concat-derived keywords for LEVEL 2 ... */
+      ]
+    },
+    "LEVEL 3": {
+      "items": [
+        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Aluminium Silicate", "normalized": "aluminium silicate" },
+        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Calcium Gluconate", "normalized": "calcium gluconate" },
+        { "group": "FOOD INTOLERANCE", "category": "[Anti-caking Agent]", "item": "Stearic Acid", "normalized": "stearic acid" },
+        { "group": "FOOD INTOLERANCE", "category": "[Coating]", "item": "Zein", "normalized": "zein" },
+        { "group": "FOOD INTOLERANCE", "category": "[Dairy]", "item": "Cheese (almond)", "normalized": "cheese almond" },
+        { "group": "FOOD INTOLERANCE", "category": "[Dairy]", "item": "Cheese (asiago)", "normalized": "cheese asiago" }
+        /* ... all remaining LEVEL 3 items ... */
+      ],
+      "match_keywords": [
+        "aluminium silicate",
+        "calcium gluconate",
+        "stearic acid",
+        "zein",
+        "cheese almond",
+        "cheese asiago",
+        "cheese colby"
+        /* ... all distinct Item_Concat-derived keywords for LEVEL 3 ... */
+      ]
     }
-  ],
-  "match_keywords": [
-    "acacia gum",
-    "acai berry",
-    "aluminium silicate",
-    "amberjack",
-    "apple",
-    "avocado",
-    "avocado oil",
-    "avocado seed oil",
-    "beef bone broth",
-    "blue mussels",
-    "boar pork",
-    "bok choy",
-    "broccoli",
-    "brown sugar",
-    "buckwheat",
-    "butter",
-    "button",
-    "calcium 5 ribonucleotide",
-    "calcium caseinate",
-    "calcium diglutamate",
-    "calcium gluconate",
-    "calcium malate",
-    "calcium sulphate",
-    "canola",
-    "canola oil",
-    "canola seed oil",
-    "caraway",
-    "carboxymethyl cellulose",
-    "carrageenan",
-    "carrots",
-    "casein",
-    "caseinate",
-    "cassava flour",
-    "catfish",
-    "cheese",
-    "cherries",
-    "chicken dark",
-    "clams",
-    "clarified butter",
-    "coconut",
-    "coconut oil",
-    "coconut seed oil",
-    "collard greens",
-    "crab",
-    "cream",
-    "curry",
-    "diastatic malt powder",
-    "dicalcium ionisate",
-    "e407",
-    "e461",
-    "e463",
-    "e967",
-    "edamame",
-    "eel",
-    "feijoa",
-    "figs",
-    "ghee",
-    "grapefruit",
-    "gum arabic",
-    "habanero pepper",
-    "harissa",
-    "hemp",
-    "horseradish",
-    "hydroxypropylcellulose",
-    "kcl",
-    "lactitol",
-    "lettuce",
-    "liver",
-    "locust bean gum carob gum",
-    "mackerel",
-    "mahi mahi",
-    "mangosteen",
-    "methylcellulose",
-    "miso",
-    "monostarch phosphate",
-    "onions",
-    "oranges",
-    "oyster",
-    "oysters",
-    "paprika",
-    "peanut",
-    "peanut oil",
-    "peanut seed oil",
-    "pepper",
-    "pistachio",
-    "potassium chloride",
-    "prawns",
-    "rice",
-    "rye",
-    "sago",
-    "salt",
-    "sardines",
-    "scallops",
-    "snapper",
-    "sodium caseinate",
-    "sodium cyclamate",
-    "soybean flour",
-    "squash",
-    "stearic acid",
-    "sunflower seed",
-    "tamari",
-    "tara meal",
-    "tempeh",
-    "tilapia",
-    "tomatillo",
-    "triticale",
-    "trout",
-    "turmeric",
-    "wagyu beef",
-    "wasabi",
-    "watercress",
-    "wheat",
-    "xylitol",
-    "zein"
-  ]
+  },
+  "combined": {
+    "items": [
+      /* all items across all levels (same objects as above, concatenated) */
+    ],
+    "match_keywords": [
+      /* union of all per-level match_keywords (de-duplicated), 659 entries total */
+    ]
+  }
 }
